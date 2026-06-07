@@ -74,30 +74,36 @@
   /* ===== 筛选区 ===== */
   .filters {
     max-width: 1400px; margin: 16px auto; padding: 0 24px;
-    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
   }
   .filters .label { font-size: 13px; color: var(--text2); margin-right: 4px; }
   .filter-btn {
     background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
-    padding: 6px 16px; font-size: 13px; color: var(--text2);
+    padding: 6px 14px; font-size: 13px; color: var(--text2);
     cursor: pointer; transition: all 0.2s;
   }
   .filter-btn:hover { border-color: var(--primary); color: var(--text); }
   .filter-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
   .filter-right {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
     flex-wrap: nowrap;
+    flex: 1 1 280px;
+    max-width: 460px;
     margin-left: auto;
   }
   .search-box {
     background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
     padding: 6px 16px; font-size: 13px; color: var(--text);
-    outline: none; width: 320px; transition: all 0.2s;
+    outline: none;
+    flex: 1;
+    min-width: 150px;
+    transition: all 0.2s;
   }
-  .search-box:focus { border-color: var(--primary); width: 420px; }
+  .search-box:focus { border-color: var(--primary); }
   .search-box::placeholder { color: var(--text2); }
+
 
   /* ===== 说明横幅 ===== */
   .banner {
