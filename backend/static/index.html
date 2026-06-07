@@ -1703,7 +1703,8 @@ function getProviderApiBase(slug) {
     'grok': 'https://api.x.ai/v1',
     'anyrouter': 'https://api.anyrouter.ai/v1',
     'opencode': 'https://api.opencode.ai/v1',
-    'minimax': 'https://api.minimax.chat/v1'
+    'minimax': 'https://api.minimax.chat/v1',
+    'zhipu': 'https://open.bigmodel.cn/api/paas/v4'
   };
   return bases[slug] || 'https://api.example.com/v1';
 }
@@ -1729,15 +1730,15 @@ function renderModelDetail(m) {
   // 构造 cURL 示例
   let curlSnippet = '';
   if (isGemini) {
-    curlSnippet = `curl https://generativelanguage.googleapis.com/v1beta/models/${m.model_id}:generateContent?key=YOUR_API_KEY \\\\
-  -H "Content-Type: application/json" \\\\
+    curlSnippet = `curl https://generativelanguage.googleapis.com/v1beta/models/${m.model_id}:generateContent?key=YOUR_API_KEY \\
+  -H "Content-Type: application/json" \\
   -d '{
     "contents": [{"parts":[{"text": "Explain quantum computing in one sentence."}]}]
   }'`;
   } else {
-    curlSnippet = `curl ${apiBaseUrl}/chat/completions \\\\
-  -H "Content-Type: application/json" \\\\
-  -H "Authorization: Bearer YOUR_API_KEY" \\\\
+    curlSnippet = `curl ${apiBaseUrl}/chat/completions \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
   -d '{
     "model": "${m.model_id}",
     "messages": [{"role": "user", "content": "Hello!"}]
