@@ -783,7 +783,6 @@
     justify-content: space-between;
     padding: 10px 14px;
     height: 48px;
-    border-left: 3px solid var(--primary);
   }
   .model-name-compact {
     font-size: 13px;
@@ -1172,8 +1171,9 @@ function renderModels(models) {
 
   if (isCompact) {
     grid.innerHTML = models.map(m => {
+      const tier = m.capability_tier || 2;
       return `
-        <div class="model-card compact-card" onclick="showModelDetail(${m.id})">
+        <div class="model-card compact-card tier${tier}" onclick="showModelDetail(${m.id})">
           <div class="model-name-compact" title="${m.model_id}">${m.model_id}</div>
           <span class="meta-tag provider">🏢 ${m.provider.name}</span>
         </div>
