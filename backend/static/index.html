@@ -257,15 +257,7 @@
   .batch-actions {
     display: flex;
     gap: 8px;
-    padding: 10px 20px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(0,0,0,0.15);
     align-items: center;
-  }
-  .batch-actions .batch-label {
-    font-size: 12px;
-    color: var(--text2);
-    margin-right: 4px;
   }
   .batch-btn {
     font-size: 12px;
@@ -399,32 +391,20 @@
   .toggle-label.showing { color: #00c864; }
   .toggle-label.hidden-state { color: #ff6b6b; }
 
-  .provider-tip {
-    font-size: 12px; color: var(--text2);
-    padding: 12px 20px 4px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .provider-tip .tip-icon {
-    width: 24px; height: 24px;
-    border-radius: 50%;
-    background: rgba(108,92,231,0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size: 13px;
-  }
-
   .provider-summary {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 16px;
-    padding: 10px 20px;
+    padding: 8px 20px;
     background: rgba(0,0,0,0.1);
     border-bottom: 1px solid var(--border);
     font-size: 12px;
+  }
+  .provider-summary .summary-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
   }
   .provider-summary .summary-item {
     display: flex;
@@ -639,20 +619,17 @@
       <h3>⚙️ 提供商管理 <span class="provider-count-badge" id="providerCountBadge">0</span></h3>
       <button class="modal-close" id="modalClose">&times;</button>
     </div>
-    <div class="provider-tip">
-      <span class="tip-icon">💡</span>
-      <span>关闭某个提供商后，其所有模型将从列表中隐藏。<strong>开关即时生效</strong></span>
-    </div>
     <div class="provider-summary" id="providerSummary">
-      <span class="summary-item">总计 <span class="num" id="summaryTotal">0</span></span>
-      <span class="summary-item">🟢 显示 <span class="num visible-num" id="summaryVisible">0</span></span>
-      <span class="summary-item">🔴 隐藏 <span class="num hidden-num" id="summaryHidden">0</span></span>
-    </div>
-    <div class="batch-actions">
-      <span class="batch-label">批量操作：</span>
-      <button class="batch-btn show-all" id="batchShowAllBtn">🟢 全部显示</button>
-      <button class="batch-btn hide-all" id="batchHideAllBtn">🔴 全部隐藏</button>
-      <button class="batch-btn" id="batchToggleAllBtn">🔄 全部切换</button>
+      <div class="summary-stats">
+        <span class="summary-item">总计 <span class="num" id="summaryTotal">0</span></span>
+        <span class="summary-item">🟢 显示 <span class="num visible-num" id="summaryVisible">0</span></span>
+        <span class="summary-item">🔴 隐藏 <span class="num hidden-num" id="summaryHidden">0</span></span>
+      </div>
+      <div class="batch-actions">
+        <button class="batch-btn show-all" id="batchShowAllBtn">🟢 全部显示</button>
+        <button class="batch-btn hide-all" id="batchHideAllBtn">🔴 全部隐藏</button>
+        <button class="batch-btn" id="batchToggleAllBtn">🔄 全部切换</button>
+      </div>
     </div>
     <div class="modal-body" id="providerList">
       <!-- 由 JS 渲染 -->
