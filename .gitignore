@@ -1,0 +1,43 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments & Configs
+.env
+.venv
+env/
+venv/
+ENV/
+.vscode/
+
+# Project Database & Backups
+data/
+backups/
+backend/data/
+backend/backups/
+*.db
+*.db-journal
+*.db-wal
+*.bak
+
+# OS / PowerShell Temp Files
+$null
+%TEMP%/
+-p/
+Thumbs.db
+Desktop.ini
+
+# Logs & Output files
+*.log
+*_output.txt
+*.txt
+
+# Local test & diagnosis scripts
+test_*.py
+
+# Documentation & plan folders
+plans/
+
+# Demo files
+gemini_image_demo.py

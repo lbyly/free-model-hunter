@@ -764,8 +764,13 @@
 
   /* ===== 简版视图样式 ===== */
   .model-grid.compact-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
+  }
+  @media (max-width: 992px) {
+    .model-grid.compact-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
   @media (max-width: 576px) {
     .model-grid.compact-grid {
@@ -840,7 +845,7 @@
   <button class="filter-btn" data-use-case="reranker">🔀 重排序</button>
   <input class="search-box" id="searchInput" placeholder="🔍 搜索模型名称..." />
   <button class="filter-btn" id="refreshBtn">🔄 刷新数据</button>
-  <button class="filter-btn" id="manageProvidersBtn">⚙️ 提供商</button>
+  <button class="filter-btn" id="manageProvidersBtn">⚙️</button>
 </div>
 
 <div class="banner" id="banner">
@@ -870,6 +875,7 @@
     <div class="modal-tabs" id="modalTabs">
       <div class="modal-tab active" data-target="providerListView" id="tabList">📁 提供商列表</div>
       <div class="modal-tab" data-target="providerAddView" id="tabAdd">➕ 添加提供商</div>
+      <div class="modal-tab" data-target="providerBackupView" id="tabBackup">💾 备份与恢复</div>
       <div class="modal-tab" id="tabEdit" style="display:none;" data-target="providerEditView">✏️ 编辑提供商</div>
     </div>
     
@@ -1011,6 +1017,45 @@
             <button type="button" class="reset-btn" id="cancelEditBtn">❌ 取消编辑</button>
           </div>
         </form>
+      </div>
+
+      <!-- 视图 4: 备份与恢复 -->
+      <div class="modal-body-view" id="providerBackupView">
+        <div class="settings-form">
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label style="font-weight: 600; font-size: 14px;">📤 导出配置备份</label>
+            <span class="form-hint" style="margin-bottom: 10px;">将当前所有提供商、API Key 和已抓取的模型数据导出为 JSON 文件下载到本地。</span>
+            <button type="button" class="submit-btn" id="exportBackupBtn" style="background: var(--primary); display: inline-flex; align-items: center; gap: 6px; width: fit-content; border: none;">
+              📥 导出并下载 backup.json
+            </button>
+          </div>
+          
+          <hr style="border: none; border-top: 1px solid var(--border); margin: 16px 0;" />
+          
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label style="font-weight: 600; font-size: 14px;">📥 导入配置恢复</label>
+            <span class="form-hint" style="margin-bottom: 10px;">选择之前导出的 JSON 备份文件，恢复提供商及模型配置（会保留现有数据并更新/新增匹配项）。</span>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 6px; flex-wrap: wrap;">
+              <input type="file" id="importFile" accept=".json" style="display: none;" />
+              <button type="button" class="reset-btn" id="chooseFileBtn" style="padding: 8px 16px;">📁 选择备份文件...</button>
+              <span id="selectedFileName" style="font-size: 12px; color: var(--text2);">未选择文件</span>
+              <button type="button" class="submit-btn save" id="importBackupBtn" disabled style="padding: 8px 16px; border: none;">
+                ⚡ 确认导入恢复
+              </button>
+            </div>
+          </div>
+
+          <hr style="border: none; border-top: 1px solid var(--border); margin: 16px 0;" />
+
+          <div class="form-group">
+            <label style="font-weight: 600; font-size: 14px;">🗄️ 服务器本地备份</label>
+            <span class="form-hint" style="margin-bottom: 10px;">在后端服务器的 `backups` 目录下创建当前 SQLite 数据库文件 (`models.db`) 的副本备份。</span>
+            <button type="button" class="test-btn" id="localBackupBtn" style="margin-top: 6px; width: fit-content; padding: 8px 16px;">
+              📦 创建本地数据库备份 (.bak)
+            </button>
+            <div id="localBackupStatus" class="test-status-msg" style="margin-top: 10px; display: none;"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1829,6 +1874,119 @@ document.getElementById('modelDetailClose').addEventListener('click', () => {
 detailModal.addEventListener('click', (e) => {
   if (e.target === detailModal) {
     detailModal.classList.remove('open');
+  }
+});
+
+// ===== 备份与恢复功能 =====
+document.getElementById('exportBackupBtn').addEventListener('click', async () => {
+  try {
+    const res = await fetch(`${apiBase}/backup/export`);
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.href = url;
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    downloadAnchor.download = `free_models_hub_backup_${dateStr}.json`;
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    alert('导出备份失败: ' + e.message);
+  }
+});
+
+const importFileInput = document.getElementById('importFile');
+const chooseFileBtn = document.getElementById('chooseFileBtn');
+const selectedFileName = document.getElementById('selectedFileName');
+const importBackupBtn = document.getElementById('importBackupBtn');
+
+chooseFileBtn.addEventListener('click', () => {
+  importFileInput.click();
+});
+
+importFileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    selectedFileName.textContent = file.name;
+    importBackupBtn.disabled = false;
+  } else {
+    selectedFileName.textContent = '未选择文件';
+    importBackupBtn.disabled = true;
+  }
+});
+
+importBackupBtn.addEventListener('click', async () => {
+  const file = importFileInput.files[0];
+  if (!file) return;
+  
+  if (!confirm('确定导入此备份文件吗？这会新增或更新现有的提供商及模型配置数据。')) {
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const res = await fetch(`${apiBase}/backup/import`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || '未知错误');
+      }
+      
+      const resData = await res.json();
+      const stats = resData.stats;
+      alert(`导入成功！\n新增提供商: ${stats.providers_added} 个\n更新提供商: ${stats.providers_updated} 个\n导入模型: ${stats.models_imported} 个`);
+      
+      // 重置文件选择
+      importFileInput.value = '';
+      selectedFileName.textContent = '未选择文件';
+      importBackupBtn.disabled = true;
+      
+      // 刷新 UI
+      await loadProviders();
+      await loadModels();
+      await loadStats();
+    } catch (err) {
+      alert('导入备份失败: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+});
+
+const localBackupBtn = document.getElementById('localBackupBtn');
+const localBackupStatus = document.getElementById('localBackupStatus');
+
+localBackupBtn.addEventListener('click', async () => {
+  localBackupBtn.disabled = true;
+  localBackupBtn.textContent = '⏳ 正在备份...';
+  localBackupStatus.style.display = 'none';
+  
+  try {
+    const res = await fetch(`${apiBase}/backup/local`, { method: 'POST' });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      localBackupStatus.textContent = `✅ 备份成功！已在服务器本地 backups 目录下生成备份文件: ${data.filename}`;
+      localBackupStatus.className = 'test-status-msg success';
+      localBackupStatus.style.display = 'block';
+    } else {
+      throw new Error(data.detail || '未知错误');
+    }
+  } catch (e) {
+    localBackupStatus.textContent = `❌ 备份失败: ${e.message}`;
+    localBackupStatus.className = 'test-status-msg error';
+    localBackupStatus.style.display = 'block';
+  } finally {
+    localBackupBtn.disabled = false;
+    localBackupBtn.textContent = '📦 创建本地数据库备份 (.bak)';
   }
 });
 
