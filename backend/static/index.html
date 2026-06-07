@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Free Models Hub - 免费 AI 模型仓库</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
 <style>
@@ -205,7 +208,9 @@
     border-radius: var(--radius);
     max-width: 560px; width: 90%;
     max-height: 80vh;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     box-shadow: 0 8px 40px rgba(0,0,0,0.5);
     animation: modalSlideIn 0.25s ease-out;
   }
@@ -217,7 +222,6 @@
     display: flex; align-items: center; justify-content: space-between;
     padding: 16px 20px;
     border-bottom: 1px solid var(--border);
-    position: sticky; top: 0;
     background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
     z-index: 1;
     border-radius: var(--radius) var(--radius) 0 0;
@@ -243,7 +247,11 @@
     transition: all 0.2s;
   }
   .modal-close:hover { background: rgba(255,107,107,0.15); color: #ff6b6b; }
-  .modal-body { padding: 8px 20px 16px; }
+  .modal-body {
+    padding: 8px 20px 16px;
+    overflow-y: auto;
+    flex: 1;
+  }
 
   /* 批量操作栏 */
   .batch-actions {
