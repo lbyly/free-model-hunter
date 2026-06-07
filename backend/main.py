@@ -101,10 +101,12 @@ app.add_middleware(
 from api.providers import router as providers_router
 from api.models import router as models_router
 from api.admin import router as admin_router
+from api.hermes_catalog import router as hermes_router
 
 app.include_router(providers_router)
 app.include_router(models_router)
 app.include_router(admin_router)
+app.include_router(hermes_router)
 
 
 # 前端页面
