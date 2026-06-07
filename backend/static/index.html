@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Models Hub - 免费 AI 模型仓库</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<style>
+  /* ===== CSS 变量 ===== */
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d2e;
+    --surface2: #232740;
+    --border: #2e3354;
+    --text: #e8eaf0;
+    --text2: #8b90b0;
+    --primary: #6c5ce7;
+    --primary-light: #a29bfe;
+    --tier1: #ffd700;
+    --tier2: #00d2ff;
+    --tier3: #7ec8a0;
+    --t1-bg: rgba(255,215,0,0.12);
+    --t2-bg: rgba(0,210,255,0.10);
+    --t3-bg: rgba(126,200,160,0.10);
+    --radius: 12px;
+    --shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ===== 头部 ===== */
+  header {
+    background: linear-gradient(135deg, #1a1d2e 0%, #232740 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .header-inner {
+    max-width: 1400px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .logo { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .logo span { background: linear-gradient(135deg, var(--primary-light), var(--tier2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .logo small { font-size: 13px; font-weight: 400; color: var(--text2); -webkit-text-fill-color: var(--text2); }
+  .stats-bar {
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    padding: 6px 16px; font-size: 13px; display: flex; align-items: center; gap: 6px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .stat-chip:hover { border-color: var(--primary); background: var(--surface2); }
+  .stat-chip.active { border-color: var(--primary); background: rgba(108,92,231,0.15); }
+  .stat-chip .num { font-weight: 700; font-size: 14px; }
+  .chip-t1 { border-color: rgba(255,215,0,0.3); }
+  .chip-t1 .num { color: var(--tier1); }
+  .chip-t2 { border-color: rgba(0,210,255,0.3); }
+  .chip-t2 .num { color: var(--tier2); }
+  .chip-t3 { border-color: rgba(126,200,160,0.3); }
+  .chip-t3 .num { color: var(--tier3); }
+
+  /* ===== 筛选区 ===== */
+  .filters {
+    max-width: 1400px; margin: 16px auto; padding: 0 24px;
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  }
+  .filters .label { font-size: 13px; color: var(--text2); margin-right: 4px; }
+  .filter-btn {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    padding: 6px 16px; font-size: 13px; color: var(--text2);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .filter-btn:hover { border-color: var(--primary); color: var(--text); }
+  .filter-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .search-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    padding: 6px 16px; font-size: 13px; color: var(--text);
+    outline: none; width: 200px; transition: all 0.2s;
+  }
+  .search-box:focus { border-color: var(--primary); width: 260px; }
+  .search-box::placeholder { color: var(--text2); }
+
+  /* ===== 说明横幅 ===== */
+  .banner {
+    max-width: 1400px; margin: 12px auto 0; padding: 0 24px;
+  }
+  .banner-inner {
+    background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(0,210,255,0.06));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 20px; font-size: 14px; color: var(--text2);
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .banner-inner strong { color: var(--text); }
+
+  /* ===== 模型网格 ===== */
+  .container { max-width: 1400px; margin: 16px auto; padding: 0 24px 40px; }
+  .model-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 12px;
+  }
+  .model-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px 18px; transition: all 0.25s;
+    position: relative; overflow: hidden;
+    cursor: pointer;
+  }
+  .model-card:hover {
+    border-color: var(--primary); transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .model-card.tier1 { border-left: 3px solid var(--tier1); }
+  .model-card.tier2 { border-left: 3px solid var(--tier2); }
+  .model-card.tier3 { border-left: 3px solid var(--tier3); }
+
+  .card-header {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+  }
+  .model-name {
+    font-size: 15px; font-weight: 600; color: var(--text);
+    line-height: 1.3;
+  }
+  .tier-badge {
+    font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .tier-badge.t1 { background: var(--t1-bg); color: var(--tier1); }
+  .tier-badge.t2 { background: var(--t2-bg); color: var(--tier2); }
+  .tier-badge.t3 { background: var(--t3-bg); color: var(--tier3); }
+
+  .card-body { margin-top: 8px; }
+  .card-desc {
+    font-size: 12px; color: var(--text2); line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .card-meta {
+    margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .meta-tag {
+    font-size: 11px; padding: 2px 10px; border-radius: 10px;
+    background: var(--surface2); color: var(--text2);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .meta-tag.free { background: rgba(126,200,160,0.15); color: #7ec8a0; }
+  .meta-tag.provider { background: rgba(108,92,231,0.12); color: var(--primary-light); }
+  .meta-tag.use-case i { font-style: normal; }
+
+  .card-footer {
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; color: var(--text2);
+  }
+  .card-footer .context { color: var(--tier2); }
+  .card-footer .quota { color: var(--tier3); }
+
+  /* ===== 分页 ===== */
+  .pagination {
+    margin-top: 24px; display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .page-btn {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 16px; font-size: 13px; color: var(--text); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .page-btn:hover { border-color: var(--primary); }
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .page-btn.active { background: var(--primary); border-color: var(--primary); }
+  .page-info { font-size: 13px; color: var(--text2); }
+
+  /* ===== 加载 / 空状态 ===== */
+  .loading {
+    text-align: center; padding: 60px 20px; color: var(--text2);
+  }
+  .loading .spinner {
+    width: 32px; height: 32px; border: 3px solid var(--border);
+    border-top-color: var(--primary); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty { text-align: center; padding: 60px 20px; color: var(--text2); font-size: 15px; }
+  .empty .icon { font-size: 48px; margin-bottom: 12px; }
+
+  /* ===== 提供商管理（模态框） ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 200;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    max-width: 560px; width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    animation: modalSlideIn 0.25s ease-out;
+  }
+  @keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-20px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0;
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+    z-index: 1;
+  }
+  .modal-header h3 {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .modal-header h3 .provider-count-badge {
+    font-size: 12px;
+    font-weight: 400;
+    background: var(--surface2);
+    color: var(--text2);
+    padding: 1px 10px;
+    border-radius: 10px;
+  }
+  .modal-close {
+    background: none; border: none; color: var(--text2);
+    font-size: 20px; cursor: pointer; padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+  .modal-body { padding: 8px 20px 16px; }
+
+  /* 批量操作栏 */
+  .batch-actions {
+    display: flex;
+    gap: 8px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.15);
+    align-items: center;
+  }
+  .batch-actions .batch-label {
+    font-size: 12px;
+    color: var(--text2);
+    margin-right: 4px;
+  }
+  .batch-btn {
+    font-size: 12px;
+    padding: 5px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .batch-btn:hover {
+    border-color: var(--primary);
+    color: var(--text);
+    background: var(--surface2);
+  }
+  .batch-btn.show-all {
+    border-color: rgba(0,210,255,0.3);
+    color: var(--tier2);
+  }
+  .batch-btn.show-all:hover {
+    background: rgba(0,210,255,0.1);
+    border-color: var(--tier2);
+  }
+  .batch-btn.hide-all {
+    border-color: rgba(255,107,107,0.3);
+    color: #ff6b6b;
+  }
+  .batch-btn.hide-all:hover {
+    background: rgba(255,107,107,0.1);
+    border-color: #ff6b6b;
+  }
+  .batch-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .provider-row {
+    display: flex; align-items: center;
+    padding: 10px 12px;
+    margin: 0 -12px;
+    border-radius: 8px;
+    border-bottom: 1px solid rgba(46,51,84,0.3);
+    gap: 12px;
+    transition: all 0.2s;
+  }
+  .provider-row:hover {
+    background: rgba(108,92,231,0.04);
+  }
+  .provider-row:last-child { border-bottom: none; }
+  .provider-row .provider-icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .provider-row .info {
+    flex: 1;
+    display: flex; align-items: center; gap: 10px;
+    min-width: 0;
+  }
+  .provider-row .info .name {
+    font-size: 14px; font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .provider-row .info .count {
+    font-size: 12px; color: var(--text2);
+    background: var(--surface2);
+    padding: 1px 8px; border-radius: 10px;
+    white-space: nowrap;
+  }
+  .provider-row .info .hidden-badge {
+    font-size: 11px; color: #ff6b6b;
+    background: rgba(255,107,107,0.12);
+    padding: 1px 8px; border-radius: 10px;
+    animation: fadeIn 0.2s ease-out;
+  }
+  /* 切换开关 - 美化版 */
+  .toggle-switch {
+    position: relative;
+    width: 40px; height: 22px;
+    flex-shrink: 0;
+  }
+  .toggle-switch input {
+    opacity: 0; width: 0; height: 0;
+  }
+  .toggle-slider {
+    position: absolute; cursor: pointer;
+    inset: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    transition: all 0.3s;
+  }
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    top: 2px; left: 2px;
+    background: var(--text2);
+    transition: all 0.3s;
+  }
+  .toggle-switch input:checked + .toggle-slider {
+    background: rgba(255,107,107,0.25);
+    border-color: #ff6b6b;
+  }
+  .toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(18px);
+    background: #ff6b6b;
+  }
+
+  /* 开关标签文字 */
+  .toggle-label {
+    font-size: 11px;
+    color: var(--text2);
+    width: 32px;
+    text-align: center;
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .toggle-label.showing { color: #00c864; }
+  .toggle-label.hidden-state { color: #ff6b6b; }
+
+  .provider-tip {
+    font-size: 12px; color: var(--text2);
+    padding: 12px 20px 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .provider-tip .tip-icon {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(108,92,231,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+  }
+
+  .provider-summary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 20px;
+    background: rgba(0,0,0,0.1);
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .provider-summary .summary-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text2);
+  }
+  .provider-summary .summary-item .num {
+    font-weight: 600;
+    color: var(--text);
+  }
+  .provider-summary .summary-item .num.visible-num { color: #00c864; }
+  .provider-summary .summary-item .num.hidden-num { color: #ff6b6b; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* 提供商空搜索状态 */
+  .provider-empty {
+    text-align: center;
+    padding: 24px;
+    color: var(--text2);
+    font-size: 13px;
+  }
+
+  /* ===== 响应式 ===== */
+  @media (max-width: 768px) {
+    .header-inner { flex-direction: column; align-items: flex-start; }
+    .stats-bar { width: 100%; }
+    .stat-chip { flex: 1; justify-content: center; }
+    .model-grid { grid-template-columns: 1fr; }
+    .search-box { width: 100%; }
+    .search-box:focus { width: 100%; }
+    .filters { overflow-x: auto; flex-wrap: nowrap; }
+    .detail-row { flex-direction: column; align-items: flex-start; gap: 6px; }
+    .detail-label { width: 100%; }
+  }
+
+  /* ===== 模型详情模态框 ===== */
+  .detail-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 10px;
+    font-size: 14px;
+  }
+  .detail-row {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+    gap: 10px;
+  }
+  .detail-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .detail-label {
+    font-weight: 600;
+    color: var(--text);
+    width: 150px;
+    flex-shrink: 0;
+  }
+  .detail-value {
+    color: var(--text2);
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .detail-code {
+    background: var(--surface2);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 13px;
+    color: #ff6b6b;
+    border: 1px solid var(--border);
+  }
+  .copy-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover {
+    background: var(--border);
+    color: var(--text);
+  }
+  .detail-link {
+    color: #ff6b6b;
+    text-decoration: none;
+  }
+  .detail-link:hover {
+    text-decoration: underline;
+  }
+  .detail-tag {
+    background: rgba(255,107,107,0.1);
+    color: #ff6b6b;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+  }
+  .rl-tag {
+    background: rgba(0,200,100,0.1);
+    color: #00c864;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+  }
+  .detail-desc {
+    background: var(--surface2);
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    color: var(--text2);
+    width: 100%;
+    line-height: 1.5;
+    border: 1px solid var(--border);
+    white-space: pre-wrap;
+  }
+  .code-example-block {
+    background: #0f111a;
+    padding: 12px;
+    border-radius: 6px;
+    width: 100%;
+    font-family: monospace;
+    font-size: 12px;
+    color: #a6accd;
+    overflow-x: auto;
+    position: relative;
+    border: 1px solid var(--border);
+    margin: 0;
+  }
+  .code-example-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      🤖 <span>Free Models Hub</span>
+      <small>免费 AI 模型仓库</small>
+    </div>
+    <div class="stats-bar" id="statsBar">
+      <div class="stat-chip chip-t1 active" data-tier="1">
+        🏆 <span class="num">-</span> 旗舰级
+      </div>
+      <div class="stat-chip chip-t2" data-tier="2">
+        ⚡ <span class="num">-</span> 增强级
+      </div>
+      <div class="stat-chip chip-t3" data-tier="3">
+        🛠️ <span class="num">-</span> 基础级
+      </div>
+      <div class="stat-chip" data-tier="all">
+        📊 <span class="num">-</span> 全部模型
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="filters">
+  <span class="label">用途：</span>
+  <button class="filter-btn active" data-use-case="all">全部</button>
+  <button class="filter-btn" data-use-case="chat">💬 对话</button>
+  <button class="filter-btn" data-use-case="reasoning">🧠 推理</button>
+  <button class="filter-btn" data-use-case="image">🎨 图像生成</button>
+  <button class="filter-btn" data-use-case="vision">👁️ 视觉</button>
+  <button class="filter-btn" data-use-case="code">💻 代码</button>
+  <button class="filter-btn" data-use-case="audio">🎵 音频</button>
+  <button class="filter-btn" data-use-case="embedding">📐 嵌入</button>
+  <button class="filter-btn" data-use-case="reranker">🔀 重排序</button>
+  <input class="search-box" id="searchInput" placeholder="🔍 搜索模型名称..." />
+  <button class="filter-btn" id="refreshBtn">🔄 刷新数据</button>
+  <button class="filter-btn" id="manageProvidersBtn">⚙️ 提供商</button>
+</div>
+
+<div class="banner" id="banner">
+  <div class="banner-inner">
+    <span>💡</span>
+    <span id="bannerText"><strong>🏆 旗舰级（Tier 1）</strong> — 顶级大模型，SOTA 能力，适合复杂任务</span>
+  </div>
+</div>
+
+<div class="container">
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <div>正在加载模型数据...</div>
+  </div>
+  <div class="model-grid" id="modelGrid"></div>
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- ===== 提供商管理模态框 ===== -->
+<div class="modal-overlay" id="providerModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>⚙️ 提供商管理 <span class="provider-count-badge" id="providerCountBadge">0</span></h3>
+      <button class="modal-close" id="modalClose">&times;</button>
+    </div>
+    <div class="provider-tip">
+      <span class="tip-icon">💡</span>
+      <span>关闭某个提供商后，其所有模型将从列表中隐藏。<strong>开关即时生效</strong></span>
+    </div>
+    <div class="provider-summary" id="providerSummary">
+      <span class="summary-item">总计 <span class="num" id="summaryTotal">0</span></span>
+      <span class="summary-item">🟢 显示 <span class="num visible-num" id="summaryVisible">0</span></span>
+      <span class="summary-item">🔴 隐藏 <span class="num hidden-num" id="summaryHidden">0</span></span>
+    </div>
+    <div class="batch-actions">
+      <span class="batch-label">批量操作：</span>
+      <button class="batch-btn show-all" id="batchShowAllBtn">🟢 全部显示</button>
+      <button class="batch-btn hide-all" id="batchHideAllBtn">🔴 全部隐藏</button>
+      <button class="batch-btn" id="batchToggleAllBtn">🔄 全部切换</button>
+    </div>
+    <div class="modal-body" id="providerList">
+      <!-- 由 JS 渲染 -->
+    </div>
+  </div>
+</div>
+
+<!-- ===== 模型详情模态框 ===== -->
+<div class="modal-overlay" id="modelDetailModal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-header">
+      <h3 id="modelDetailTitle">🤖 模型详情</h3>
+      <button class="modal-close" id="modelDetailClose">&times;</button>
+    </div>
+    <div class="modal-body" id="modelDetailBody">
+      <!-- 由 JS 渲染 -->
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 状态 =====
+const state = {
+  tier: 1,
+  useCase: 'all',
+  search: '',
+  page: 1,
+  pageSize: 50,
+  total: 0,
+  stats: null,
+};
+
+const apiBase = '/api';
+
+// ===== DOM 引用 =====
+const grid = document.getElementById('modelGrid');
+const loading = document.getElementById('loading');
+const pagination = document.getElementById('pagination');
+const searchInput = document.getElementById('searchInput');
+const bannerText = document.getElementById('bannerText');
+
+const TIER_LABELS = {
+  1: { icon: '🏆', label: '旗舰级', desc: '顶级大模型，SOTA 能力，适合复杂任务' },
+  2: { icon: '⚡', label: '增强级', desc: '高性能模型，足以应对大多数日常任务' },
+  3: { icon: '🛠️', label: '基础级', desc: '轻量专用模型，适合嵌入、重排等任务' },
+};
+
+const USE_CASE_LABELS = {
+  chat: '💬 对话', image: '🎨 图像生成', reasoning: '🧠 推理',
+  code: '💻 代码', embedding: '📐 嵌入', vision: '👁️ 视觉',
+  audio: '🎵 音频', reranker: '🔀 重排序',
+};
+
+const USE_CASE_EMOJIS = {
+  chat: '💬', image: '🎨', reasoning: '🧠', code: '💻',
+  embedding: '📐', vision: '👁️', audio: '🎵', reranker: '🔀',
+};
+
+// ===== 加载统计 =====
+async function loadStats() {
+  try {
+    const res = await fetch(`${apiBase}/classify/stats`);
+    const data = await res.json();
+    state.stats = data;
+    updateStatsUI(data);
+  } catch (e) {
+    console.error('加载统计失败', e);
+  }
+}
+
+function updateStatsUI(data) {
+  const map = {};
+  for (const t of data.tiers) map[t.tier] = t.count;
+  document.querySelector('.chip-t1 .num').textContent = map[1] || 0;
+  document.querySelector('.chip-t2 .num').textContent = map[2] || 0;
+  document.querySelector('.chip-t3 .num').textContent = map[3] || 0;
+  const allChips = document.querySelectorAll('[data-tier="all"]');
+  allChips.forEach(c => c.querySelector('.num').textContent = data.total);
+}
+
+// ===== 加载模型 =====
+async function loadModels() {
+  loading.style.display = 'block';
+  grid.innerHTML = '';
+
+  const params = new URLSearchParams();
+  if (state.tier !== 'all') params.set('capability_tier', state.tier);
+  if (state.useCase !== 'all') params.set('use_case', state.useCase);
+  if (state.search) params.set('search', state.search);
+  params.set('page', state.page);
+  params.set('page_size', state.pageSize);
+
+  try {
+    const res = await fetch(`${apiBase}/models?${params}`);
+    const data = await res.json();
+    state.total = data.total;
+    renderModels(data.models);
+    renderPagination(data.total);
+    updateBanner();
+  } catch (e) {
+    grid.innerHTML = `<div class="empty"><div class="icon">😵</div>加载失败，请稍后重试</div>`;
+  } finally {
+    loading.style.display = 'none';
+  }
+}
+
+function renderModels(models) {
+  if (!models.length) {
+    grid.innerHTML = `<div class="empty"><div class="icon">🔍</div>没有找到匹配的模型</div>`;
+    return;
+  }
+
+  grid.innerHTML = models.map(m => {
+    const tier = m.capability_tier || 2;
+    const ti = TIER_LABELS[tier] || { label: '' };
+    const ucLabel = USE_CASE_LABELS[m.use_case] || m.use_case;
+    const freeBadge = m.is_free ? `<span class="meta-tag free">✅ 免费</span>` : '';
+    const contextHtml = m.context_window ? `<span>📐 ${m.context_window}</span>` : '';
+    const quotaHtml = m.free_quota ? `<span>${m.free_quota}</span>` : '';
+    const desc = m.description && m.description !== '提供方: ' ? m.description : '';
+
+    return `
+      <div class="model-card tier${tier}" onclick="showModelDetail(${m.id})">
+        <div class="card-header">
+          <div class="model-name">${m.name}</div>
+          <span class="tier-badge t${tier}">${ti.icon} ${ti.label}</span>
+        </div>
+        <div class="card-body">
+          <div class="card-desc">${desc || '免费模型，可通过 API 直接调用'}</div>
+          <div class="card-meta">
+            ${freeBadge}
+            <span class="meta-tag provider">🏢 ${m.provider.name}</span>
+            <span class="meta-tag use-case"><i>${USE_CASE_EMOJIS[m.use_case] || ''}</i> ${ucLabel}</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="context">${contextHtml}</span>
+          <span class="quota">${quotaHtml}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderPagination(total) {
+  const totalPages = Math.ceil(total / state.pageSize);
+  if (totalPages <= 1) { pagination.innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" onclick="goPage(${state.page - 1})" ${state.page <= 1 ? 'disabled' : ''}>◀ 上一页</button>`;
+  html += `<span class="page-info">第 ${state.page} / ${totalPages} 页（共 ${total} 个模型）</span>`;
+  html += `<button class="page-btn" onclick="goPage(${state.page + 1})" ${state.page >= totalPages ? 'disabled' : ''}>下一页 ▶</button>`;
+  pagination.innerHTML = html;
+}
+
+function updateBanner() {
+  if (state.tier === 'all') {
+    bannerText.innerHTML = `<strong>📊 全部模型</strong> — 共 ${state.total} 个，按能力分级排列`;
+  } else {
+    const ti = TIER_LABELS[state.tier];
+    const ucText = state.useCase !== 'all' ? ` · ${USE_CASE_LABELS[state.useCase] || state.useCase}` : '';
+    bannerText.innerHTML = `<strong>${ti.icon} ${ti.label}</strong> — ${ti.desc}${ucText}（共 ${state.total} 个）`;
+  }
+}
+
+function goPage(p) {
+  state.page = p;
+  loadModels();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ===== 事件绑定 =====
+document.querySelectorAll('.stat-chip[data-tier]').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.stat-chip[data-tier]').forEach(e => e.classList.remove('active'));
+    el.classList.add('active');
+    state.tier = el.dataset.tier === 'all' ? 'all' : parseInt(el.dataset.tier);
+    state.page = 1;
+    loadModels();
+  });
+});
+
+document.querySelectorAll('.filter-btn[data-use-case]').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn[data-use-case]').forEach(e => e.classList.remove('active'));
+    el.classList.add('active');
+    state.useCase = el.dataset.useCase;
+    state.page = 1;
+    loadModels();
+  });
+});
+
+let searchTimer;
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    state.search = searchInput.value.trim();
+    state.page = 1;
+    loadModels();
+  }, 300);
+});
+
+document.getElementById('refreshBtn').addEventListener('click', async () => {
+  document.getElementById('refreshBtn').textContent = '⏳ 刷新中...';
+  try {
+    await fetch(`${apiBase}/classify/run`, { method: 'POST' });
+    await loadStats();
+    await loadModels();
+  } catch (e) {
+    console.error('刷新失败', e);
+  }
+  document.getElementById('refreshBtn').textContent = '🔄 刷新数据';
+});
+
+// ===== 提供商管理 =====
+const modalOverlay = document.getElementById('providerModal');
+const providerList = document.getElementById('providerList');
+
+// 提供商名称 -> Emoji 映射
+const PROVIDER_EMOJIS = {
+  'xai': '🤖', 'sensenova': '🧠', 'nvidia': '🟢', 'mollinations': '🎨',
+  'groq': '⚡', 'cerebras': '🔵', 'alibaba_bailian': '☁️', 'agnes': '💜',
+  'zen': '🧘', 'openrouter': '🔀', 'cohere': '📄', 'gemini': '🔮',
+  'github_models': '🐙', 'notdiamond': '💎', 'grok': '🐦', 'anyrouter': '🌐',
+  'opencode': '📖', 'minimax': '🎯', 'default': '🏢',
+};
+
+function getProviderEmoji(slug) {
+  return PROVIDER_EMOJIS[slug] || PROVIDER_EMOJIS['default'];
+}
+
+async function loadProviders() {
+  providerList.innerHTML = '<div class="loading" style="padding:20px"><div class="spinner"></div><div>加载中...</div></div>';
+  try {
+    const res = await fetch(`${apiBase}/providers?include_hidden=true`);
+    const data = await res.json();
+    renderProviderList(data.providers);
+    updateProviderSummary(data.providers);
+  } catch (e) {
+    providerList.innerHTML = '<div class="empty">加载失败</div>';
+  }
+}
+
+function updateProviderSummary(providers) {
+  const total = providers.length;
+  const visible = providers.filter(p => !p.hidden).length;
+  const hidden = total - visible;
+  document.getElementById('providerCountBadge').textContent = total;
+  document.getElementById('summaryTotal').textContent = total;
+  document.getElementById('summaryVisible').textContent = visible;
+  document.getElementById('summaryHidden').textContent = hidden;
+}
+
+function renderProviderList(providers) {
+  if (!providers.length) {
+    providerList.innerHTML = '<div class="empty">暂无提供商</div>';
+    return;
+  }
+  providerList.innerHTML = providers.map(p => {
+    const isHidden = p.hidden;
+    const emoji = getProviderEmoji(p.slug);
+    return `
+      <div class="provider-row" data-slug="${p.slug}">
+        <div class="provider-icon">${emoji}</div>
+        <div class="info">
+          <span class="name">${p.name}</span>
+          <span class="count">${p.model_count} 个模型</span>
+          ${isHidden ? '<span class="hidden-badge">已隐藏</span>' : ''}
+        </div>
+        <span class="toggle-label ${isHidden ? 'hidden-state' : 'showing'}">${isHidden ? '隐藏' : '显示'}</span>
+        <label class="toggle-switch" title="${isHidden ? '点击显示' : '点击隐藏'}">
+          <input type="checkbox" ${isHidden ? '' : 'checked'} data-slug="${p.slug}">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    `;
+  }).join('');
+
+  // 绑定 toggle 事件
+  providerList.querySelectorAll('.toggle-switch input').forEach(el => {
+    el.addEventListener('change', async () => {
+      const slug = el.dataset.slug;
+      // 立即切换，不用等接口返回
+      await toggleProvider(slug);
+      // 刷新提供商列表
+      await loadProviders();
+      // 刷新模型列表
+      await loadModels();
+      await loadStats();
+    });
+  });
+}
+
+async function toggleProvider(slug) {
+  try {
+    const res = await fetch(`${apiBase}/providers/${slug}/toggle`, { method: 'POST' });
+    if (!res.ok) throw new Error(await res.text());
+    return await res.json();
+  } catch (e) {
+    console.error('切换失败', e);
+    alert('操作失败: ' + e.message);
+  }
+}
+
+// ===== 批量操作 =====
+async function batchToggle(hidden) {
+  try {
+    // 获取所有提供商 slug
+    const res = await fetch(`${apiBase}/providers?include_hidden=true`);
+    const data = await res.json();
+    const slugs = data.providers.map(p => p.slug);
+    if (!slugs.length) return;
+
+    // 禁用按钮防止重复点击
+    const btns = document.querySelectorAll('.batch-btn');
+    btns.forEach(b => b.disabled = true);
+
+    const batchRes = await fetch(`${apiBase}/providers/batch-toggle`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slugs, hidden }),
+    });
+    if (!batchRes.ok) throw new Error(await batchRes.text());
+
+    // 刷新
+    await loadProviders();
+    await loadModels();
+    await loadStats();
+  } catch (e) {
+    console.error('批量操作失败', e);
+    alert('批量操作失败: ' + e.message);
+  } finally {
+    document.querySelectorAll('.batch-btn').forEach(b => b.disabled = false);
+  }
+}
+
+async function batchToggleAll() {
+  try {
+    const res = await fetch(`${apiBase}/providers?include_hidden=true`);
+    const data = await res.json();
+    if (!data.providers.length) return;
+
+    // 检查当前是否全部隐藏：如果全部隐藏则全部显示，否则全部隐藏
+    const allHidden = data.providers.every(p => p.hidden);
+    await batchToggle(!allHidden);
+  } catch (e) {
+    console.error('批量切换失败', e);
+  }
+}
+
+document.getElementById('batchShowAllBtn').addEventListener('click', () => batchToggle(false));
+document.getElementById('batchHideAllBtn').addEventListener('click', () => batchToggle(true));
+document.getElementById('batchToggleAllBtn').addEventListener('click', batchToggleAll);
+
+// 打开模态框
+document.getElementById('manageProvidersBtn').addEventListener('click', () => {
+  modalOverlay.classList.add('open');
+  loadProviders();
+});
+
+// 关闭模态框
+document.getElementById('modalClose').addEventListener('click', () => {
+  modalOverlay.classList.remove('open');
+});
+
+modalOverlay.addEventListener('click', (e) => {
+  if (e.target === modalOverlay) {
+    modalOverlay.classList.remove('open');
+  }
+});
+
+// ===== 模型详情模态框 =====
+const detailModal = document.getElementById('modelDetailModal');
+const detailBody = document.getElementById('modelDetailBody');
+
+// 获取不同 Provider 的 API Base URL (为了在详情页友好展示)
+function getProviderApiBase(slug) {
+  const bases = {
+    'xai': 'https://api.x.ai/v1',
+    'sensenova': 'https://token.sensenova.cn/v1',
+    'nvidia': 'https://integrate.api.nvidia.com/v1',
+    'mollinations': 'https://gen.pollinations.ai/v1',
+    'groq': 'https://api.groq.com/openai/v1',
+    'cerebras': 'https://api.cerebras.ai/v1',
+    'alibaba_bailian': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+    'agnes': 'https://apihub.agnes-ai.com/v1',
+    'zen': 'https://opencode.ai/zen/v1',
+    'openrouter': 'https://openrouter.ai/api/v1',
+    'cohere': 'https://api.cohere.ai/v1',
+    'gemini': 'https://generativelanguage.googleapis.com',
+    'github_models': 'https://models.inference.ai.azure.com',
+    'notdiamond': 'https://api.notdiamond.ai/v2',
+    'grok': 'https://api.x.ai/v1',
+    'anyrouter': 'https://api.anyrouter.ai/v1',
+    'opencode': 'https://api.opencode.ai/v1',
+    'minimax': 'https://api.minimax.chat/v1'
+  };
+  return bases[slug] || 'https://api.example.com/v1';
+}
+
+async function showModelDetail(id) {
+  detailBody.innerHTML = '<div class="loading" style="padding:20px"><div class="spinner"></div><div>加载中...</div></div>';
+  detailModal.classList.add('open');
+
+  try {
+    const res = await fetch(`${apiBase}/models/${id}`);
+    if (!res.ok) throw new Error(await res.text());
+    const model = await res.json();
+    renderModelDetail(model);
+  } catch (e) {
+    detailBody.innerHTML = `<div class="empty">加载失败: ${e.message}</div>`;
+  }
+}
+
+function renderModelDetail(m) {
+  const apiBaseUrl = getProviderApiBase(m.provider.slug);
+  const isGemini = m.provider.slug === 'gemini';
+  
+  // 构造 cURL 示例
+  let curlSnippet = '';
+  if (isGemini) {
+    curlSnippet = `curl https://generativelanguage.googleapis.com/v1beta/models/${m.model_id}:generateContent?key=YOUR_API_KEY \\\\
+  -H "Content-Type: application/json" \\\\
+  -d '{
+    "contents": [{"parts":[{"text": "Explain quantum computing in one sentence."}]}]
+  }'`;
+  } else {
+    curlSnippet = `curl ${apiBaseUrl}/chat/completions \\\\
+  -H "Content-Type: application/json" \\\\
+  -H "Authorization: Bearer YOUR_API_KEY" \\\\
+  -d '{
+    "model": "${m.model_id}",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'`;
+  }
+
+  // 渲染速率限制
+  let rateLimitHtml = '<span style="color:var(--text2)">暂无限制信息</span>';
+  if (m.rate_limits && m.rate_limits.length > 0) {
+    rateLimitHtml = m.rate_limits.map(rl => {
+      const typeLabel = rl.rate_type === 'rpm' ? '每分钟请求数 (RPM)' :
+                        rl.rate_type === 'rpd' ? '每天请求数 (RPD)' :
+                        rl.rate_type === 'tpm' ? '每分钟 Token 数 (TPM)' : rl.rate_type;
+      return `<span class="rl-tag">${typeLabel}: <strong>${rl.limit_value}</strong></span>`;
+    }).join(' ');
+  }
+
+  // 渲染标签
+  let tagsHtml = '';
+  if (m.tags && m.tags.length > 0) {
+    tagsHtml = m.tags.map(t => `<span class="detail-tag">🏷️ ${t}</span>`).join(' ');
+  } else {
+    tagsHtml = '<span style="color:var(--text2)">无标签</span>';
+  }
+
+  const desc = m.description && m.description !== '提供方: ' ? m.description : '暂无详细描述信息。';
+  const websiteUrl = m.provider.website || '#';
+
+  detailBody.innerHTML = `
+    <div class="detail-section">
+      <div class="detail-row">
+        <div class="detail-label">🏢 提供商</div>
+        <div class="detail-value">
+          <strong>${m.provider.name}</strong>
+          ${m.provider.website ? `<a href="${m.provider.website}" target="_blank" class="detail-link">🌐 官方网站</a>` : ''}
+        </div>
+      </div>
+      
+      <div class="detail-row">
+        <div class="detail-label">🔑 API 标识符</div>
+        <div class="detail-value">
+          <span class="detail-code" id="codeModelId">${m.model_id}</span>
+          <button class="copy-btn" onclick="copyText('codeModelId', this)">📋 复制</button>
+        </div>
+      </div>
+
+      <div class="detail-row">
+        <div class="detail-label">🔐 API Token</div>
+        <div class="detail-value">
+          <span class="detail-code" id="codeApiKey">${m.provider.api_key || '（未在 .env 中配置）'}</span>
+          ${m.provider.api_key ? `<button class="copy-btn" onclick="copyText('codeApiKey', this)">📋 复制</button>` : ''}
+        </div>
+      </div>
+
+      <div class="detail-row">
+        <div class="detail-label">🔗 API Base URL</div>
+        <div class="detail-value">
+          <span class="detail-code" id="codeApiBase">${apiBaseUrl}</span>
+          <button class="copy-btn" onclick="copyText('codeApiBase', this)">📋 复制</button>
+        </div>
+      </div>
+
+      <div class="detail-row">
+        <div class="detail-label">📏 上下文窗口</div>
+        <div class="detail-value">
+          <span>${m.context_window ? `<strong>${m.context_window}</strong>` : '未知'}</span>
+        </div>
+      </div>
+
+      <div class="detail-row">
+        <div class="detail-label">🎁 免费配额</div>
+        <div class="detail-value">
+          <span>${m.free_quota || '完全免费'}</span>
+        </div>
+      </div>
+
+      <div class="detail-row">
+        <div class="detail-label">⚡ 速率限制</div>
+        <div class="detail-value">
+          ${rateLimitHtml}
+        </div>
+      </div>
+
+      <div class="detail-row">
+        <div class="detail-label">🏷️ 标签</div>
+        <div class="detail-value">
+          ${tagsHtml}
+        </div>
+      </div>
+
+      <div class="detail-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+        <div class="detail-label">📝 模型描述</div>
+        <div class="detail-desc">${desc}</div>
+      </div>
+
+      <div class="detail-row" style="flex-direction: column; align-items: flex-start; gap: 8px; border-bottom: none;">
+        <div class="code-example-header" style="width: 100%;">
+          <span>💻 cURL 调用示例</span>
+          <button class="copy-btn" onclick="copyText('codeCurlExample', this)">📋 复制示例</button>
+        </div>
+        <pre class="code-example-block" id="codeCurlExample">${curlSnippet}</pre>
+      </div>
+    </div>
+  `;
+}
+
+// 复制文本辅助函数
+async function copyText(elementId, btn) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  const text = el.innerText || el.textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    const originalText = btn.textContent;
+    btn.textContent = '✅ 已复制';
+    btn.style.borderColor = '#00c864';
+    btn.style.color = '#00c864';
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.borderColor = '';
+      btn.style.color = '';
+    }, 1500);
+  } catch (err) {
+    console.error('复制失败', err);
+    alert('复制失败，请手动选择复制。');
+  }
+}
+
+// 绑定模型详情关闭事件
+document.getElementById('modelDetailClose').addEventListener('click', () => {
+  detailModal.classList.remove('open');
+});
+
+detailModal.addEventListener('click', (e) => {
+  if (e.target === detailModal) {
+    detailModal.classList.remove('open');
+  }
+});
+
+// ===== 初始化 =====
+async function init() {
+  await loadStats();
+  await loadModels();
+}
+init();
+</script>
+</body>
+</html>
