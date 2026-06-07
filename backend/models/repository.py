@@ -298,8 +298,67 @@ def search_models(
         return models, total
 
 
-def get_model_by_id(model_id: int) -> Optional[dict]:
-    """根据 ID 获取模型详情"""
+def get_model_by_id(model_id) -> Optional[dict]:
+    """根据 ID 获取模型详情，支持数字 ID (m.id) 和 字符串 model_id 标识符 (m.model_id)"""
+    with get_db() as db:
+        row = None
+        # 1. 尝试作为数字 ID (primary key) 查询
+        try:
+            db_id = int(model_id)
+            row = db.execute(
+                """
+                SELECT m.*, p.name as provider_name, p.slug as provider_slug,
+                       p.website as provider_website, p.logo_url as provider_logo
+                FROM models m
+                JOIN providers p ON m.provider_id = p.id
+                WHERE m.id = ?
+                """,
+                (db_id,)
+            ).fetchone()
+        except (ValueError, TypeError):
+            pass
+
+        # 2. 尝试作为 model_id 字符串查询
+        if not row:
+            row = db.execute(
+                """
+                SELECT m.*, p.name as provider_name, p.slug as provider_slug,
+                       p.website as provider_website, p.logo_url as provider_logo
+                FROM models m
+                JOIN providers p ON m.provider_id = p.id
+                WHERE m.model_id = ?
+                ORDER BY p.hidden ASC, m.id DESC
+                LIMIT 1
+                """,
+                (str(model_id),)
+            ).fetchone()
+
+        if not row:
+            return None
+        d = dict(row)
+        try:
+            d["tags"] = json.loads(d.get("tags", "[]"))
+        except (json.JSONDecodeError, TypeError):
+            d["tags"] = []
+        rate_rows = db.execute(
+            "SELECT * FROM model_rate_limits WHERE model_id = ?",
+            (d["id"],)
+        ).fetchall()
+        d["rate_limits"] = [dict(r) for r in rate_rows]
+        provider_slug = d.pop("provider_slug")
+        d["provider"] = {
+            "slug": provider_slug,
+            "name": d.pop("provider_name"),
+            "website": d.pop("provider_website"),
+            "logo_url": d.pop("provider_logo"),
+            # 从 .env 注入该 provider 对应的 API Key（未配置则为空串）
+            "api_key": get_api_key_for_slug(provider_slug),
+        }
+        return d
+
+
+def get_model_by_provider_and_model_id(provider_slug: str, model_id: str) -> Optional[dict]:
+    """根据 provider_slug 和 model_id 获取模型详情"""
     with get_db() as db:
         row = db.execute(
             """
@@ -307,9 +366,9 @@ def get_model_by_id(model_id: int) -> Optional[dict]:
                    p.website as provider_website, p.logo_url as provider_logo
             FROM models m
             JOIN providers p ON m.provider_id = p.id
-            WHERE m.id = ?
+            WHERE p.slug = ? AND m.model_id = ?
             """,
-            (model_id,)
+            (provider_slug, model_id)
         ).fetchone()
         if not row:
             return None
@@ -333,6 +392,7 @@ def get_model_by_id(model_id: int) -> Optional[dict]:
             "api_key": get_api_key_for_slug(provider_slug),
         }
         return d
+
 
 
 # ===== 爬虫数据写入 =====

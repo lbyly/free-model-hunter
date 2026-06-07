@@ -1173,7 +1173,7 @@ function renderModels(models) {
     grid.innerHTML = models.map(m => {
       const tier = m.capability_tier || 2;
       return `
-        <div class="model-card compact-card tier${tier}" onclick="showModelDetail(${m.id})">
+        <div class="model-card compact-card tier${tier}" onclick="showModelDetail('${m.provider.slug}', '${m.model_id}')">
           <div class="model-name-compact" title="${m.model_id}">${m.model_id}</div>
           <span class="meta-tag provider">🏢 ${m.provider.name}</span>
         </div>
@@ -1192,7 +1192,7 @@ function renderModels(models) {
     const desc = m.description && m.description !== '提供方: ' ? m.description : '';
 
     return `
-      <div class="model-card tier${tier}" onclick="showModelDetail(${m.id})">
+      <div class="model-card tier${tier}" onclick="showModelDetail('${m.provider.slug}', '${m.model_id}')">
         <div class="card-header">
           <div class="model-name">${m.name}</div>
           <span class="tier-badge t${tier}">${ti.icon} ${ti.label}</span>
@@ -1709,12 +1709,12 @@ function getProviderApiBase(slug) {
   return bases[slug] || 'https://api.example.com/v1';
 }
 
-async function showModelDetail(id) {
+async function showModelDetail(providerSlug, modelId) {
   detailBody.innerHTML = '<div class="loading" style="padding:20px"><div class="spinner"></div><div>加载中...</div></div>';
   detailModal.classList.add('open');
 
   try {
-    const res = await fetch(`${apiBase}/models/${id}`);
+    const res = await fetch(`${apiBase}/models/${providerSlug}/${modelId}`);
     if (!res.ok) throw new Error(await res.text());
     const model = await res.json();
     renderModelDetail(model);

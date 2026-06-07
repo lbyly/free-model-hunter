@@ -42,13 +42,25 @@ async def list_models(
     }
 
 
-@router.get("/models/{model_id}")
-async def get_model(model_id: int):
-    """获取单个模型详情"""
+@router.get("/models/{provider_slug}/{model_id:path}")
+async def get_model_by_provider_and_slug(provider_slug: str, model_id: str):
+    """根据 provider_slug 和 model_id 获取单个模型详情"""
+    from models.repository import get_model_by_provider_and_model_id
+    model = get_model_by_provider_and_model_id(provider_slug, model_id)
+    if not model:
+        raise HTTPException(status_code=404, detail="Model not found")
+    return model
+
+
+@router.get("/models/{model_id:path}")
+async def get_model(model_id: str):
+    """获取单个模型详情（支持数字 ID 或 model_id 字符串）"""
     model = get_model_by_id(model_id)
     if not model:
         raise HTTPException(status_code=404, detail="Model not found")
     return model
+
+
 
 
 @router.get("/classify/stats")

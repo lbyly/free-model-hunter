@@ -12,6 +12,11 @@ from config import DATABASE_PATH
 
 def get_connection() -> sqlite3.Connection:
     """获取数据库连接"""
+    db_path = Path(DATABASE_PATH)
+    try:
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        print(f"Warning: Failed to create database directory {db_path.parent}: {e}")
     conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
@@ -38,35 +43,41 @@ def migrate_schema():
     conn = get_connection()
     cursor = conn.cursor()
 
-    # providers 表迁移
-    cursor.execute("PRAGMA table_info(providers)")
-    p_columns = [row[1] for row in cursor.fetchall()]
+    # 检查 providers 表是否存在
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='providers'")
+    if cursor.fetchone():
+        # providers 表迁移
+        cursor.execute("PRAGMA table_info(providers)")
+        p_columns = [row[1] for row in cursor.fetchall()]
 
-    if "hidden" not in p_columns:
-        cursor.execute("ALTER TABLE providers ADD COLUMN hidden BOOLEAN DEFAULT 0")
-        print("  [迁移] 添加 providers.hidden 列")
+        if "hidden" not in p_columns:
+            cursor.execute("ALTER TABLE providers ADD COLUMN hidden BOOLEAN DEFAULT 0")
+            print("  [迁移] 添加 providers.hidden 列")
 
-    # models 表迁移
-    cursor.execute("PRAGMA table_info(models)")
-    m_columns = [row[1] for row in cursor.fetchall()]
+    # 检查 models 表是否存在
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='models'")
+    if cursor.fetchone():
+        # models 表迁移
+        cursor.execute("PRAGMA table_info(models)")
+        m_columns = [row[1] for row in cursor.fetchall()]
 
-    if "capability_tier" not in m_columns:
-        cursor.execute("ALTER TABLE models ADD COLUMN capability_tier INTEGER DEFAULT NULL")
-        print("  [迁移] 添加 capability_tier 列")
+        if "capability_tier" not in m_columns:
+            cursor.execute("ALTER TABLE models ADD COLUMN capability_tier INTEGER DEFAULT NULL")
+            print("  [迁移] 添加 capability_tier 列")
 
-    if "use_case" not in m_columns:
-        cursor.execute("ALTER TABLE models ADD COLUMN use_case VARCHAR(30) DEFAULT 'chat'")
-        print("  [迁移] 添加 use_case 列")
+        if "use_case" not in m_columns:
+            cursor.execute("ALTER TABLE models ADD COLUMN use_case VARCHAR(30) DEFAULT 'chat'")
+            print("  [迁移] 添加 use_case 列")
 
-    # 新索引需要在列存在后才能创建
-    try:
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_models_capability_tier ON models(capability_tier)")
-    except Exception as e:
-        print(f"  [迁移跳过索引] capability_tier: {e}")
-    try:
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_models_use_case ON models(use_case)")
-    except Exception as e:
-        print(f"  [迁移跳过索引] use_case: {e}")
+        # 新索引需要在列存在后才能创建
+        try:
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_models_capability_tier ON models(capability_tier)")
+        except Exception as e:
+            print(f"  [迁移跳过索引] capability_tier: {e}")
+        try:
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_models_use_case ON models(use_case)")
+        except Exception as e:
+            print(f"  [迁移跳过索引] use_case: {e}")
 
     conn.commit()
     conn.close()
@@ -74,9 +85,6 @@ def migrate_schema():
 
 def init_db():
     """初始化数据库，创建所有表"""
-    # 先迁移旧表添加新字段
-    migrate_schema()
-
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -89,6 +97,7 @@ def init_db():
             scrape_url VARCHAR(255),
             scraper_class VARCHAR(100),
             is_active BOOLEAN DEFAULT 1,
+            hidden BOOLEAN DEFAULT 0,
             logo_url VARCHAR(255),
             last_scraped DATETIME,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -155,3 +164,6 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+    # 确保运行迁移来同步旧版本或特殊配置
+    migrate_schema()
