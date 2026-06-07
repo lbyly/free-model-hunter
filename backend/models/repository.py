@@ -550,6 +550,9 @@ def seed_providers():
         {"name": "NVIDIA", "slug": "nvidia", "website": "https://build.nvidia.com/explore/discover",
          "scrape_url": "https://integrate.api.nvidia.com/v1/models", "scraper_class": "NvidiaScraper",
          "logo_url": ""},
+        {"name": "智谱 AI", "slug": "zhipu", "website": "https://open.bigmodel.cn",
+         "scrape_url": "https://open.bigmodel.cn/api/paas/v4/models", "scraper_class": "ZhipuScraper",
+         "logo_url": ""},
     ]
     with get_db() as db:
         for p in providers:

@@ -45,6 +45,7 @@ OPENCODE_API_KEY = os.getenv("OPENCODE_API_KEY", "")
 MOLLINATIONS_API_KEY = os.getenv("MOLLINATIONS_API_KEY", "")
 SENSENOVA_API_KEY = os.getenv("SENSENOVA_API_KEY", "")
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "")
+ZHIPU_API_KEY = os.getenv("ZHIPU_API_KEY", "")
 
 
 # ===== Provider slug → API Key 环境变量映射 =====
@@ -65,6 +66,7 @@ SLUG_TO_API_KEY_VAR = {
     "mollinations": "MOLLINATIONS_API_KEY",
     "sensenova": "SENSENOVA_API_KEY",
     "nvidia": "NVIDIA_API_KEY",
+    "zhipu": "ZHIPU_API_KEY",
 }
 
 
