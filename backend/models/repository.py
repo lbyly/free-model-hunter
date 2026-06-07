@@ -34,6 +34,8 @@ def get_all_providers(active_only: bool = True, include_hidden: bool = False) ->
             d["model_count"] = cnt["c"]
             # hidden 默认 false
             d["hidden"] = bool(d.get("hidden", 0))
+            d["is_active"] = bool(d.get("is_active", 1))
+            d["api_key"] = get_api_key_for_slug(d["slug"])
             results.append(d)
         return results
 
@@ -46,7 +48,102 @@ def get_provider_by_slug(slug: str) -> Optional[dict]:
             return None
         d = dict(row)
         d["hidden"] = bool(d.get("hidden", 0))
+        d["is_active"] = bool(d.get("is_active", 1))
+        d["api_key"] = get_api_key_for_slug(slug)
+        cnt = db.execute("SELECT COUNT(*) as c FROM models WHERE provider_id = ?", (d["id"],)).fetchone()
+        d["model_count"] = cnt["c"]
         return d
+
+
+def create_provider(data: dict) -> dict:
+    """创建新的 Provider"""
+    name = data.get("name")
+    slug = data.get("slug")
+    if not name or not slug:
+        raise ValueError("提供商名称和标识符(slug)不能为空")
+        
+    with get_db() as db:
+        existing = db.execute("SELECT id FROM providers WHERE slug = ?", (slug,)).fetchone()
+        if existing:
+            raise ValueError(f"提供商标识符(slug) '{slug}' 已存在")
+            
+        db.execute(
+            """INSERT INTO providers (name, slug, website, scrape_url, scraper_class, logo_url, is_active, hidden)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                name,
+                slug,
+                data.get("website", ""),
+                data.get("scrape_url", ""),
+                data.get("scraper_class", ""),
+                data.get("logo_url", ""),
+                1 if data.get("is_active", True) else 0,
+                1 if data.get("hidden", False) else 0
+            )
+        )
+        
+    # 如果传了 api_key，则进行更新
+    api_key = data.get("api_key")
+    if api_key is not None:
+        from config import update_api_key_for_slug
+        update_api_key_for_slug(slug, api_key)
+        
+    return get_provider_by_slug(slug)
+
+
+def update_provider_details(slug: str, data: dict) -> dict:
+    """更新 Provider 详细信息"""
+    name = data.get("name")
+    if not name:
+        raise ValueError("提供商名称不能为空")
+        
+    with get_db() as db:
+        existing = db.execute("SELECT id FROM providers WHERE slug = ?", (slug,)).fetchone()
+        if not existing:
+            raise ValueError(f"提供商 '{slug}' 不存在")
+            
+        db.execute(
+            """UPDATE providers 
+               SET name = ?, website = ?, scrape_url = ?, scraper_class = ?, logo_url = ?, is_active = ?, hidden = ?, updated_at = CURRENT_TIMESTAMP
+               WHERE slug = ?""",
+            (
+                name,
+                data.get("website", ""),
+                data.get("scrape_url", ""),
+                data.get("scraper_class", ""),
+                data.get("logo_url", ""),
+                1 if data.get("is_active", True) else 0,
+                1 if data.get("hidden", False) else 0,
+                slug
+            )
+        )
+        
+    # 如果传了 api_key，则进行更新
+    api_key = data.get("api_key")
+    if api_key is not None:
+        from config import update_api_key_for_slug
+        update_api_key_for_slug(slug, api_key)
+        
+    return get_provider_by_slug(slug)
+
+
+def delete_provider(slug: str):
+    """安全删除 Provider 及其级联的所有数据"""
+    with get_db() as db:
+        provider = db.execute("SELECT id FROM providers WHERE slug = ?", (slug,)).fetchone()
+        if not provider:
+            raise ValueError(f"提供商 '{slug}' 不存在")
+            
+        provider_id = provider["id"]
+        
+        # 1. 删除关联模型的速率限制
+        db.execute("DELETE FROM model_rate_limits WHERE model_id IN (SELECT id FROM models WHERE provider_id = ?)", (provider_id,))
+        # 2. 删除关联的模型
+        db.execute("DELETE FROM models WHERE provider_id = ?", (provider_id,))
+        # 3. 删除爬取日志
+        db.execute("DELETE FROM scrape_logs WHERE provider_id = ?", (provider_id,))
+        # 4. 删除提供商自身
+        db.execute("DELETE FROM providers WHERE id = ?", (provider_id,))
 
 
 def toggle_provider_hidden(slug: str) -> dict:
@@ -63,6 +160,8 @@ def toggle_provider_hidden(slug: str) -> dict:
         cnt = db.execute("SELECT COUNT(*) as c FROM models WHERE provider_id = ?", (d["id"],)).fetchone()
         d["model_count"] = cnt["c"]
         d["hidden"] = bool(d["hidden"])
+        d["is_active"] = bool(d.get("is_active", 1))
+        d["api_key"] = get_api_key_for_slug(slug)
         return d
 
 
@@ -86,6 +185,8 @@ def batch_set_providers_hidden(slugs: list[str], hidden: bool) -> list[dict]:
             cnt = db.execute("SELECT COUNT(*) as c FROM models WHERE provider_id = ?", (d["id"],)).fetchone()
             d["model_count"] = cnt["c"]
             d["hidden"] = bool(d["hidden"])
+            d["is_active"] = bool(d.get("is_active", 1))
+            d["api_key"] = get_api_key_for_slug(d["slug"])
             results.append(d)
         return results
 
@@ -460,3 +561,205 @@ def seed_providers():
                     (p["name"], p["slug"], p["website"], p["scrape_url"], p["scraper_class"], p["logo_url"])
                 )
         print(f"  [OK] 已初始化 {len(providers)} 个 Provider")
+
+
+def export_data_json() -> dict:
+    """导出系统配置和数据为 JSON 字典"""
+    from config import get_api_key_for_slug
+    import json
+    
+    export_data = {
+        "version": "1.0",
+        "providers": [],
+        "models": []
+    }
+    
+    with get_db() as db:
+        # 1. 导出 providers
+        p_rows = db.execute("SELECT * FROM providers").fetchall()
+        for r in p_rows:
+            d = dict(r)
+            d["api_key"] = get_api_key_for_slug(d["slug"])
+            # 移除自动生成的系统字段和ID以便在其他实例能够干净导入
+            d.pop("id", None)
+            d.pop("last_scraped", None)
+            d.pop("created_at", None)
+            d.pop("updated_at", None)
+            export_data["providers"].append(d)
+            
+        # 2. 导出 models
+        m_rows = db.execute(
+            """SELECT m.*, p.slug as provider_slug 
+               FROM models m 
+               JOIN providers p ON m.provider_id = p.id"""
+        ).fetchall()
+        for r in m_rows:
+            d = dict(r)
+            try:
+                d["tags"] = json.loads(d.get("tags", "[]"))
+            except Exception:
+                d["tags"] = []
+            
+            model_db_id = d.pop("id", None)
+            d.pop("provider_id", None)
+            d.pop("created_at", None)
+            d.pop("updated_at", None)
+            
+            # 3. 导出该模型的 rate limits
+            if model_db_id:
+                rl_rows = db.execute("SELECT rate_type, limit_value, tier FROM model_rate_limits WHERE model_id = ?", (model_db_id,)).fetchall()
+                d["rate_limits"] = [dict(rl) for rl in rl_rows]
+            else:
+                d["rate_limits"] = []
+                
+            export_data["models"].append(d)
+            
+    return export_data
+
+
+def import_data_json(export_data: dict) -> dict:
+    """从 JSON 字典恢复系统配置和数据"""
+    from config import update_api_key_for_slug
+    import json
+    
+    providers = export_data.get("providers", [])
+    models = export_data.get("models", [])
+    
+    stats = {
+        "providers_added": 0,
+        "providers_updated": 0,
+        "models_imported": 0
+    }
+    
+    with get_db() as db:
+        # 1. 导入/更新 providers
+        for p in providers:
+            slug = p.get("slug")
+            name = p.get("name")
+            if not slug or not name:
+                continue
+                
+            existing = db.execute("SELECT id FROM providers WHERE slug = ?", (slug,)).fetchone()
+            if existing:
+                db.execute(
+                    """UPDATE providers 
+                       SET name = ?, website = ?, scrape_url = ?, scraper_class = ?, logo_url = ?, is_active = ?, hidden = ?, updated_at = CURRENT_TIMESTAMP
+                       WHERE slug = ?""",
+                    (
+                        name,
+                        p.get("website", ""),
+                        p.get("scrape_url", ""),
+                        p.get("scraper_class", ""),
+                        p.get("logo_url", ""),
+                        1 if p.get("is_active", True) else 0,
+                        1 if p.get("hidden", False) else 0,
+                        slug
+                    )
+                )
+                stats["providers_updated"] += 1
+            else:
+                db.execute(
+                    """INSERT INTO providers (name, slug, website, scrape_url, scraper_class, logo_url, is_active, hidden)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (
+                        name,
+                        slug,
+                        p.get("website", ""),
+                        p.get("scrape_url", ""),
+                        p.get("scraper_class", ""),
+                        p.get("logo_url", ""),
+                        1 if p.get("is_active", True) else 0,
+                        1 if p.get("hidden", False) else 0
+                    )
+                )
+                stats["providers_added"] += 1
+                
+            # 更新 API Key
+            api_key = p.get("api_key")
+            if api_key:
+                update_api_key_for_slug(slug, api_key)
+                
+        # 2. 导入 models
+        for m in models:
+            provider_slug = m.get("provider_slug")
+            model_id = m.get("model_id")
+            if not provider_slug or not model_id:
+                continue
+                
+            # 查找 provider id
+            p_row = db.execute("SELECT id FROM providers WHERE slug = ?", (provider_slug,)).fetchone()
+            if not p_row:
+                continue
+            provider_id = p_row["id"]
+            
+            tags_json = json.dumps(m.get("tags", []), ensure_ascii=False)
+            
+            db.execute(
+                """INSERT INTO models (provider_id, model_id, name, description, type,
+                    capability_tier, use_case,
+                    is_free, free_quota, pricing_url, context_window, tags, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(provider_id, model_id) DO UPDATE SET
+                    name=excluded.name,
+                    description=excluded.description,
+                    type=excluded.type,
+                    capability_tier=excluded.capability_tier,
+                    use_case=excluded.use_case,
+                    is_free=excluded.is_free,
+                    free_quota=excluded.free_quota,
+                    pricing_url=excluded.pricing_url,
+                    context_window=excluded.context_window,
+                    tags=excluded.tags,
+                    status=excluded.status,
+                    updated_at=CURRENT_TIMESTAMP
+                """,
+                (
+                    provider_id,
+                    model_id,
+                    m.get("name", ""),
+                    m.get("description", ""),
+                    m.get("type", "chat"),
+                    m.get("capability_tier"),
+                    m.get("use_case", "chat"),
+                    1 if m.get("is_free") else 0,
+                    m.get("free_quota"),
+                    m.get("pricing_url"),
+                    m.get("context_window"),
+                    tags_json,
+                    m.get("status", "active")
+                )
+            )
+            
+            # 获取插入/更新后的 model id 并重建 rate limits
+            m_row = db.execute("SELECT id FROM models WHERE provider_id = ? AND model_id = ?", (provider_id, model_id)).fetchone()
+            if m_row:
+                db.execute("DELETE FROM model_rate_limits WHERE model_id = ?", (m_row["id"],))
+                for rl in m.get("rate_limits", []):
+                    db.execute(
+                        "INSERT INTO model_rate_limits (model_id, rate_type, limit_value, tier) VALUES (?, ?, ?, ?)",
+                        (m_row["id"], rl.get("rate_type"), rl.get("limit_value"), rl.get("tier", "free"))
+                    )
+            stats["models_imported"] += 1
+            
+    return stats
+
+
+def backup_local_database() -> str:
+    """在服务器本地备份 SQLite 数据库文件到 backups 目录下"""
+    import shutil
+    from datetime import datetime
+    from pathlib import Path
+    from config import DATABASE_PATH
+    
+    db_file = Path(DATABASE_PATH)
+    if not db_file.exists():
+        raise FileNotFoundError("数据库文件不存在，无法备份")
+        
+    backups_dir = db_file.parent / "backups"
+    backups_dir.mkdir(exist_ok=True)
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_file = backups_dir / f"models.db.{timestamp}.bak"
+    
+    shutil.copy2(db_file, backup_file)
+    return backup_file.name

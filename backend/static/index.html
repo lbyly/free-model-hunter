@@ -51,7 +51,7 @@
     flex-wrap: wrap; gap: 12px;
   }
   .logo { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-  .logo span { background: linear-gradient(135deg, var(--primary-light), var(--tier2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .logo span { background: linear-gradient(135deg, var(--primary-light), var(--tier2)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
   .logo small { font-size: 13px; font-weight: 400; color: var(--text2); -webkit-text-fill-color: var(--text2); }
   .stats-bar {
     display: flex; gap: 16px; flex-wrap: wrap;
@@ -143,7 +143,7 @@
   .card-body { margin-top: 8px; }
   .card-desc {
     font-size: 12px; color: var(--text2); line-height: 1.5;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
   .card-meta {
     margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px;
@@ -553,6 +553,251 @@
     font-size: 12px;
     color: var(--text2);
   }
+  .modal-tabs {
+    display: flex;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 12px;
+  }
+  .modal-tab {
+    padding: 12px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    color: var(--text2);
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .modal-tab:hover {
+    color: var(--text);
+  }
+  .modal-tab.active {
+    border-bottom-color: var(--primary);
+    color: var(--primary-light);
+    font-weight: 600;
+  }
+  .modal-body-view {
+    display: none;
+    animation: fadeIn 0.2s ease-out;
+  }
+  .modal-body-view.active {
+    display: block;
+  }
+
+  .settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 12px 4px;
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .form-group label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .form-group label .required {
+    color: #ff6b6b;
+  }
+  .form-group input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus {
+    border-color: var(--primary);
+  }
+  .form-hint {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: -2px;
+  }
+  .form-row {
+    display: flex;
+    gap: 12px;
+  }
+  .form-row .form-group {
+    flex: 1;
+    min-width: 0;
+  }
+  .input-password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+  .input-password-wrapper input {
+    width: 100%;
+    padding-right: 36px;
+  }
+  .password-toggle-eye {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+    color: var(--text2);
+  }
+  .form-group-checkbox {
+    display: flex;
+    align-items: center;
+    padding: 6px 0;
+  }
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text);
+    user-select: none;
+  }
+  .checkbox-label input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary);
+  }
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .submit-btn, .reset-btn, .test-btn {
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  .submit-btn {
+    background: var(--primary);
+    color: #fff;
+  }
+  .submit-btn:hover {
+    background: #5b4dbd;
+  }
+  .submit-btn.save {
+    background: #00c864;
+  }
+  .submit-btn.save:hover {
+    background: #00b057;
+  }
+  .reset-btn {
+    background: var(--surface2);
+    border-color: var(--border);
+    color: var(--text2);
+  }
+  .reset-btn:hover {
+    border-color: var(--primary);
+    color: var(--text);
+  }
+  .test-btn {
+    background: rgba(0, 210, 255, 0.12);
+    border-color: rgba(0, 210, 255, 0.3);
+    color: var(--tier2);
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  .test-btn:hover {
+    background: rgba(0, 210, 255, 0.2);
+    border-color: var(--tier2);
+  }
+  .test-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .test-connection-section {
+    background: rgba(0,0,0,0.15);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    margin-top: 4px;
+    width: 100%;
+  }
+  .test-status-msg {
+    font-size: 12px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    line-height: 1.4;
+    max-height: 120px;
+    overflow-y: auto;
+    color: var(--text2);
+  }
+  .test-status-msg.success { color: #00c864; }
+  .test-status-msg.error { color: #ff6b6b; }
+  
+  .provider-row .action-btns {
+    display: flex;
+    gap: 6px;
+    margin-right: 4px;
+  }
+  .action-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s;
+  }
+  .action-btn:hover {
+    color: var(--text);
+  }
+  .action-btn.edit-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary-light);
+    background: rgba(108,92,231,0.1);
+  }
+
+  /* ===== 简版视图样式 ===== */
+  .model-grid.compact-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 576px) {
+    .model-grid.compact-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .model-card.compact-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    height: 48px;
+    border-left: 3px solid var(--primary);
+  }
+  .model-name-compact {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 8px;
+    font-family: monospace;
+  }
+  .model-card.compact-card .provider {
+    margin-top: 0;
+    font-size: 11px;
+    padding: 2px 8px;
+    flex-shrink: 0;
+    background: rgba(108,92,231,0.12);
+    color: var(--primary-light);
+  }
 </style>
 </head>
 <body>
@@ -576,6 +821,8 @@
       <div class="stat-chip" data-tier="all">
         📊 <span class="num">-</span> 全部模型
       </div>
+      <button class="stat-chip" id="layoutCardBtn" data-layout="card" style="color: var(--text);">📋 详细</button>
+      <button class="stat-chip" id="layoutCompactBtn" data-layout="compact" style="color: var(--text);">⚡ 简版</button>
     </div>
   </div>
 </header>
@@ -614,25 +861,157 @@
 
 <!-- ===== 提供商管理模态框 ===== -->
 <div class="modal-overlay" id="providerModal">
-  <div class="modal-content">
+  <div class="modal-content" style="max-width: 600px;">
     <div class="modal-header">
-      <h3>⚙️ 提供商管理 <span class="provider-count-badge" id="providerCountBadge">0</span></h3>
+      <h3>⚙️ 提供商与 API 设置 <span class="provider-count-badge" id="providerCountBadge">0</span></h3>
       <button class="modal-close" id="modalClose">&times;</button>
     </div>
-    <div class="provider-summary" id="providerSummary">
-      <div class="summary-stats">
-        <span class="summary-item">总计 <span class="num" id="summaryTotal">0</span></span>
-        <span class="summary-item">🟢 显示 <span class="num visible-num" id="summaryVisible">0</span></span>
-        <span class="summary-item">🔴 隐藏 <span class="num hidden-num" id="summaryHidden">0</span></span>
-      </div>
-      <div class="batch-actions">
-        <button class="batch-btn show-all" id="batchShowAllBtn">🟢 全部显示</button>
-        <button class="batch-btn hide-all" id="batchHideAllBtn">🔴 全部隐藏</button>
-        <button class="batch-btn" id="batchToggleAllBtn">🔄 全部切换</button>
-      </div>
+    
+    <div class="modal-tabs" id="modalTabs">
+      <div class="modal-tab active" data-target="providerListView" id="tabList">📁 提供商列表</div>
+      <div class="modal-tab" data-target="providerAddView" id="tabAdd">➕ 添加提供商</div>
+      <div class="modal-tab" id="tabEdit" style="display:none;" data-target="providerEditView">✏️ 编辑提供商</div>
     </div>
-    <div class="modal-body" id="providerList">
-      <!-- 由 JS 渲染 -->
+    
+    <div class="modal-body" style="padding: 16px 20px;">
+      <!-- 视图 1: 提供商列表 -->
+      <div class="modal-body-view active" id="providerListView">
+        <div class="provider-summary" id="providerSummary" style="margin: -16px -20px 12px; border-radius: 0;">
+          <div class="summary-stats">
+            <span class="summary-item">总计 <span class="num" id="summaryTotal">0</span></span>
+            <span class="summary-item">🟢 显示 <span class="num visible-num" id="summaryVisible">0</span></span>
+            <span class="summary-item">🔴 隐藏 <span class="num hidden-num" id="summaryHidden">0</span></span>
+          </div>
+          <div class="batch-actions">
+            <button class="batch-btn show-all" id="batchShowAllBtn">🟢 全部显示</button>
+            <button class="batch-btn hide-all" id="batchHideAllBtn">🔴 全部隐藏</button>
+            <button class="batch-btn" id="batchToggleAllBtn">🔄 全部切换</button>
+          </div>
+        </div>
+        <div id="providerList">
+          <!-- 由 JS 渲染 -->
+        </div>
+      </div>
+      
+      <!-- 视图 2: 添加提供商 -->
+      <div class="modal-body-view" id="providerAddView">
+        <form id="addProviderForm" class="settings-form">
+          <div class="form-group">
+            <label for="add_name">提供商名称 <span class="required">*</span></label>
+            <input type="text" id="add_name" required placeholder="如: DeepSeek" />
+          </div>
+          <div class="form-group">
+            <label for="add_slug">标识符 (Slug) <span class="required">*</span></label>
+            <input type="text" id="add_slug" required placeholder="如: deepseek" />
+            <span class="form-hint">Slug 只能包含小写字母、数字和下划线，作为配置 API key 的前缀</span>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="add_website">官网链接</label>
+              <input type="url" id="add_website" placeholder="https://..." />
+            </div>
+            <div class="form-group">
+              <label for="add_logo_url">Logo 图片链接</label>
+              <input type="url" id="add_logo_url" placeholder="https://..." />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="add_scraper_class">爬虫类名 (Scraper Class)</label>
+              <input type="text" id="add_scraper_class" placeholder="如: DeepSeekScraper (可选)" />
+            </div>
+            <div class="form-group">
+              <label for="add_scrape_url">爬虫入口 API 链接</label>
+              <input type="url" id="add_scrape_url" placeholder="如: https://api.deepseek.com/v1 (可选)" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="add_api_key">API Key (API Token)</label>
+            <div class="input-password-wrapper">
+              <input type="password" id="add_api_key" placeholder="填入 API 密钥以在此测试及供爬虫/API使用" />
+              <span class="password-toggle-eye" onclick="togglePasswordVisibility('add_api_key')">👁️</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group-checkbox">
+              <label class="checkbox-label">
+                <input type="checkbox" id="add_is_active" checked />
+                <span>是否启用 (Is Active)</span>
+              </label>
+            </div>
+            <div class="form-group-checkbox">
+              <label class="checkbox-label">
+                <input type="checkbox" id="add_hidden" />
+                <span>是否隐藏模型 (Hidden)</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="submit-btn">➕ 确认新增</button>
+            <button type="reset" class="reset-btn">🔄 重置表单</button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- 视图 3: 编辑提供商 -->
+      <div class="modal-body-view" id="providerEditView">
+        <form id="editProviderForm" class="settings-form">
+          <input type="hidden" id="edit_slug" />
+          <div class="form-group">
+            <label for="edit_name">提供商名称 <span class="required">*</span></label>
+            <input type="text" id="edit_name" required placeholder="如: DeepSeek" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit_website">官网链接</label>
+              <input type="url" id="edit_website" placeholder="https://..." />
+            </div>
+            <div class="form-group">
+              <label for="edit_logo_url">Logo 图片链接</label>
+              <input type="url" id="edit_logo_url" placeholder="https://..." />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit_scraper_class">爬虫类名 (Scraper Class)</label>
+              <input type="text" id="edit_scraper_class" placeholder="如: DeepSeekScraper (可选)" />
+            </div>
+            <div class="form-group">
+              <label for="edit_scrape_url">爬虫入口 API 链接</label>
+              <input type="url" id="edit_scrape_url" placeholder="如: https://api.deepseek.com/v1 (可选)" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit_api_key">API Key (API Token)</label>
+            <div class="input-password-wrapper">
+              <input type="password" id="edit_api_key" placeholder="留空不修改，输入新值可覆盖更新" />
+              <span class="password-toggle-eye" onclick="togglePasswordVisibility('edit_api_key')">👁️</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group-checkbox">
+              <label class="checkbox-label">
+                <input type="checkbox" id="edit_is_active" />
+                <span>是否启用 (Is Active)</span>
+              </label>
+            </div>
+            <div class="form-group-checkbox">
+              <label class="checkbox-label">
+                <input type="checkbox" id="edit_hidden" />
+                <span>是否隐藏模型 (Hidden)</span>
+              </label>
+            </div>
+          </div>
+          <div class="test-connection-section" id="testConnectionSection">
+            <button type="button" class="test-btn" id="testRefreshBtn">⚡ 测试连接并刷新模型</button>
+            <div class="test-status-msg" id="testStatusMsg">点击上方按钮，后台将立即尝试爬取并验证免费模型。</div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="submit-btn save">💾 保存修改</button>
+            <button type="button" class="reset-btn" id="cancelEditBtn">❌ 取消编辑</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </div>
@@ -660,6 +1039,7 @@ const state = {
   pageSize: 50,
   total: 0,
   stats: null,
+  layout: localStorage.getItem('layout_preference') || 'card',
 };
 
 const apiBase = '/api';
@@ -739,6 +1119,21 @@ async function loadModels() {
 function renderModels(models) {
   if (!models.length) {
     grid.innerHTML = `<div class="empty"><div class="icon">🔍</div>没有找到匹配的模型</div>`;
+    return;
+  }
+
+  const isCompact = state.layout === 'compact';
+  grid.classList.toggle('compact-grid', isCompact);
+
+  if (isCompact) {
+    grid.innerHTML = models.map(m => {
+      return `
+        <div class="model-card compact-card" onclick="showModelDetail(${m.id})">
+          <div class="model-name-compact" title="${m.model_id}">${m.model_id}</div>
+          <span class="meta-tag provider">🏢 ${m.provider.name}</span>
+        </div>
+      `;
+    }).join('');
     return;
   }
 
@@ -843,6 +1238,34 @@ document.getElementById('refreshBtn').addEventListener('click', async () => {
   document.getElementById('refreshBtn').textContent = '🔄 刷新数据';
 });
 
+// ===== 视图模式切换 =====
+function updateLayoutButtonsUI() {
+  const cardBtn = document.getElementById('layoutCardBtn');
+  const compactBtn = document.getElementById('layoutCompactBtn');
+  
+  if (state.layout === 'compact') {
+    cardBtn.classList.remove('active');
+    compactBtn.classList.add('active');
+  } else {
+    cardBtn.classList.add('active');
+    compactBtn.classList.remove('active');
+  }
+}
+
+document.getElementById('layoutCardBtn').addEventListener('click', () => {
+  state.layout = 'card';
+  localStorage.setItem('layout_preference', 'card');
+  updateLayoutButtonsUI();
+  loadModels();
+});
+
+document.getElementById('layoutCompactBtn').addEventListener('click', () => {
+  state.layout = 'compact';
+  localStorage.setItem('layout_preference', 'compact');
+  updateLayoutButtonsUI();
+  loadModels();
+});
+
 // ===== 提供商管理 =====
 const modalOverlay = document.getElementById('providerModal');
 const providerList = document.getElementById('providerList');
@@ -863,7 +1286,7 @@ function getProviderEmoji(slug) {
 async function loadProviders() {
   providerList.innerHTML = '<div class="loading" style="padding:20px"><div class="spinner"></div><div>加载中...</div></div>';
   try {
-    const res = await fetch(`${apiBase}/providers?include_hidden=true`);
+    const res = await fetch(`${apiBase}/providers?active_only=false&include_hidden=true`);
     const data = await res.json();
     renderProviderList(data.providers);
     updateProviderSummary(data.providers);
@@ -884,19 +1307,24 @@ function updateProviderSummary(providers) {
 
 function renderProviderList(providers) {
   if (!providers.length) {
-    providerList.innerHTML = '<div class="empty">暂无提供商</div>';
+    providerList.innerHTML = '<div class="provider-empty">暂无提供商</div>';
     return;
   }
   providerList.innerHTML = providers.map(p => {
     const isHidden = p.hidden;
     const emoji = getProviderEmoji(p.slug);
+    const activeText = p.is_active ? '' : ' <span style="font-size:11px;color:#ff6b6b;background:rgba(255,107,107,0.1);padding:1px 6px;border-radius:10px;margin-left:4px;">已禁用</span>';
     return `
       <div class="provider-row" data-slug="${p.slug}">
         <div class="provider-icon">${emoji}</div>
         <div class="info">
-          <span class="name">${p.name}</span>
+          <span class="name" style="${p.is_active ? '' : 'color:var(--text2);text-decoration:line-through;'}">${p.name}${activeText}</span>
           <span class="count">${p.model_count} 个模型</span>
           ${isHidden ? '<span class="hidden-badge">已隐藏</span>' : ''}
+        </div>
+        <div class="action-btns">
+          <button class="action-btn edit-btn" onclick="openEditProvider('${p.slug}')">✏️ 编辑</button>
+          <button class="action-btn delete-btn" onclick="deleteProvider('${p.slug}', '${p.name}')">🗑️ 删除</button>
         </div>
         <span class="toggle-label ${isHidden ? 'hidden-state' : 'showing'}">${isHidden ? '隐藏' : '显示'}</span>
         <label class="toggle-switch" title="${isHidden ? '点击显示' : '点击隐藏'}">
@@ -911,11 +1339,8 @@ function renderProviderList(providers) {
   providerList.querySelectorAll('.toggle-switch input').forEach(el => {
     el.addEventListener('change', async () => {
       const slug = el.dataset.slug;
-      // 立即切换，不用等接口返回
       await toggleProvider(slug);
-      // 刷新提供商列表
       await loadProviders();
-      // 刷新模型列表
       await loadModels();
       await loadStats();
     });
@@ -937,7 +1362,7 @@ async function toggleProvider(slug) {
 async function batchToggle(hidden) {
   try {
     // 获取所有提供商 slug
-    const res = await fetch(`${apiBase}/providers?include_hidden=true`);
+    const res = await fetch(`${apiBase}/providers?active_only=false&include_hidden=true`);
     const data = await res.json();
     const slugs = data.providers.map(p => p.slug);
     if (!slugs.length) return;
@@ -967,7 +1392,7 @@ async function batchToggle(hidden) {
 
 async function batchToggleAll() {
   try {
-    const res = await fetch(`${apiBase}/providers?include_hidden=true`);
+    const res = await fetch(`${apiBase}/providers?active_only=false&include_hidden=true`);
     const data = await res.json();
     if (!data.providers.length) return;
 
@@ -986,6 +1411,7 @@ document.getElementById('batchToggleAllBtn').addEventListener('click', batchTogg
 // 打开模态框
 document.getElementById('manageProvidersBtn').addEventListener('click', () => {
   modalOverlay.classList.add('open');
+  document.getElementById('tabList').click();
   loadProviders();
 });
 
@@ -997,6 +1423,214 @@ document.getElementById('modalClose').addEventListener('click', () => {
 modalOverlay.addEventListener('click', (e) => {
   if (e.target === modalOverlay) {
     modalOverlay.classList.remove('open');
+  }
+});
+
+// ===== 密码显示/隐藏切换 =====
+function togglePasswordVisibility(id) {
+  const el = document.getElementById(id);
+  if (el.type === 'password') {
+    el.type = 'text';
+  } else {
+    el.type = 'password';
+  }
+}
+
+// ===== Tab 导航切换 =====
+document.querySelectorAll('.modal-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.target;
+    document.querySelectorAll('.modal-body-view').forEach(view => {
+      view.classList.remove('active');
+    });
+    document.getElementById(target).classList.add('active');
+    
+    document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    
+    if (tab.id !== 'tabEdit') {
+      document.getElementById('tabEdit').style.display = 'none';
+    }
+  });
+});
+
+// ===== Slug 自动生成 =====
+let isSlugManuallyEdited = false;
+document.getElementById('add_name').addEventListener('input', (e) => {
+  if (isSlugManuallyEdited) return;
+  const name = e.target.value;
+  const slug = name.trim().toLowerCase()
+    .replace(/[^a-z0-9_]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  document.getElementById('add_slug').value = slug;
+});
+document.getElementById('add_slug').addEventListener('input', () => {
+  isSlugManuallyEdited = true;
+});
+
+// ===== 编辑提供商 =====
+async function openEditProvider(slug) {
+  const tabEdit = document.getElementById('tabEdit');
+  tabEdit.style.display = 'block';
+  tabEdit.click();
+  
+  document.getElementById('testStatusMsg').textContent = '点击上方按钮，后台将立即尝试爬取并验证免费模型。';
+  document.getElementById('testStatusMsg').className = 'test-status-msg';
+  
+  try {
+    const res = await fetch(`${apiBase}/providers/${slug}`);
+    if (!res.ok) throw new Error(await res.text());
+    const p = await res.json();
+    
+    document.getElementById('edit_slug').value = p.slug;
+    document.getElementById('edit_name').value = p.name;
+    document.getElementById('edit_website').value = p.website || '';
+    document.getElementById('edit_logo_url').value = p.logo_url || '';
+    document.getElementById('edit_scraper_class').value = p.scraper_class || '';
+    document.getElementById('edit_scrape_url').value = p.scrape_url || '';
+    document.getElementById('edit_api_key').value = ''; 
+    document.getElementById('edit_is_active').checked = p.is_active;
+    document.getElementById('edit_hidden').checked = p.hidden;
+    
+    document.getElementById('testConnectionSection').style.display = p.scraper_class ? 'block' : 'none';
+  } catch (e) {
+    alert('获取提供商详情失败: ' + e.message);
+    cancelEdit();
+  }
+}
+
+function cancelEdit() {
+  document.getElementById('tabEdit').style.display = 'none';
+  document.getElementById('tabList').click();
+}
+
+async function deleteProvider(slug, name) {
+  if (!confirm(`确认要删除提供商 "${name}" 吗？这将级联删除其关联的所有模型、速率限制和爬取日志！`)) {
+    return;
+  }
+  try {
+    const res = await fetch(`${apiBase}/providers/${slug}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(await res.text());
+    
+    alert('删除成功');
+    await loadProviders();
+    await loadModels();
+    await loadStats();
+  } catch (e) {
+    alert('删除失败: ' + e.message);
+  }
+}
+
+document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
+
+// ===== 添加提供商表单提交 =====
+document.getElementById('addProviderForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const data = {
+    name: document.getElementById('add_name').value.trim(),
+    slug: document.getElementById('add_slug').value.trim(),
+    website: document.getElementById('add_website').value.trim(),
+    logo_url: document.getElementById('add_logo_url').value.trim(),
+    scraper_class: document.getElementById('add_scraper_class').value.trim(),
+    scrape_url: document.getElementById('add_scrape_url').value.trim(),
+    api_key: document.getElementById('add_api_key').value,
+    is_active: document.getElementById('add_is_active').checked,
+    hidden: document.getElementById('add_hidden').checked,
+  };
+  
+  try {
+    const res = await fetch(`${apiBase}/providers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || '未知错误');
+    }
+    
+    alert('添加提供商成功！');
+    document.getElementById('addProviderForm').reset();
+    isSlugManuallyEdited = false;
+    
+    document.getElementById('tabList').click();
+    await loadProviders();
+    await loadModels();
+    await loadStats();
+  } catch (err) {
+    alert('添加失败: ' + err.message);
+  }
+});
+
+// ===== 编辑提供商表单提交 =====
+document.getElementById('editProviderForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const slug = document.getElementById('edit_slug').value;
+  const data = {
+    name: document.getElementById('edit_name').value.trim(),
+    website: document.getElementById('edit_website').value.trim(),
+    logo_url: document.getElementById('edit_logo_url').value.trim(),
+    scraper_class: document.getElementById('edit_scraper_class').value.trim(),
+    scrape_url: document.getElementById('edit_scrape_url').value.trim(),
+    is_active: document.getElementById('edit_is_active').checked,
+    hidden: document.getElementById('edit_hidden').checked,
+  };
+  
+  const apiKeyVal = document.getElementById('edit_api_key').value;
+  if (apiKeyVal) {
+    data.api_key = apiKeyVal;
+  }
+  
+  try {
+    const res = await fetch(`${apiBase}/providers/${slug}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || '未知错误');
+    }
+    
+    alert('保存提供商信息成功！');
+    cancelEdit();
+    await loadProviders();
+    await loadModels();
+    await loadStats();
+  } catch (err) {
+    alert('保存失败: ' + err.message);
+  }
+});
+
+// ===== 一键测试与刷新 =====
+document.getElementById('testRefreshBtn').addEventListener('click', async () => {
+  const slug = document.getElementById('edit_slug').value;
+  const btn = document.getElementById('testRefreshBtn');
+  const msg = document.getElementById('testStatusMsg');
+  
+  btn.disabled = true;
+  btn.textContent = '⏳ 测试连接并刷新中...';
+  msg.textContent = '后台正在执行爬虫和 API 验证（向各模型发送 Hi），这可能需要 5-30 秒，请稍候...';
+  msg.className = 'test-status-msg';
+  
+  try {
+    const res = await fetch(`${apiBase}/refresh/${slug}`, { method: 'POST' });
+    const data = await res.json();
+    
+    if (res.ok && data.success) {
+      msg.textContent = `✅ 测试成功！成功刷新并获取了 ${data.count} 个免费模型。`;
+      msg.className = 'test-status-msg success';
+      await loadModels();
+      await loadStats();
+    } else {
+      throw new Error(data.detail || '测试失败');
+    }
+  } catch (e) {
+    msg.textContent = `❌ 测试失败: ${e.message}\n可能的原因：\n1. API Key 不正确或已过期；\n2. 网络连接异常（如需要科学上网）；\n3. 爬虫类配置错误。`;
+    msg.className = 'test-status-msg error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⚡ 测试连接并刷新模型';
   }
 });
 
@@ -1200,6 +1834,7 @@ detailModal.addEventListener('click', (e) => {
 
 // ===== 初始化 =====
 async function init() {
+  updateLayoutButtonsUI();
   await loadStats();
   await loadModels();
 }

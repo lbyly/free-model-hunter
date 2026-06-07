@@ -2,15 +2,23 @@
 Provider API 路由
 """
 from fastapi import APIRouter, HTTPException
-from models.repository import get_all_providers, get_provider_by_slug, toggle_provider_hidden, batch_set_providers_hidden
+from models.repository import (
+    get_all_providers,
+    get_provider_by_slug,
+    toggle_provider_hidden,
+    batch_set_providers_hidden,
+    create_provider,
+    update_provider_details,
+    delete_provider,
+)
 
 router = APIRouter(prefix="/api", tags=["providers"])
 
 
 @router.get("/providers")
-async def list_providers(include_hidden: bool = False):
-    """获取所有活跃的 Provider"""
-    providers = get_all_providers(active_only=True, include_hidden=include_hidden)
+async def list_providers(active_only: bool = True, include_hidden: bool = False):
+    """获取 Provider 列表"""
+    providers = get_all_providers(active_only=active_only, include_hidden=include_hidden)
     return {"providers": providers}
 
 
@@ -21,6 +29,42 @@ async def get_provider(slug: str):
     if not provider:
         raise HTTPException(status_code=404, detail=f"Provider '{slug}' not found")
     return provider
+
+
+@router.post("/providers")
+async def add_provider(data: dict):
+    """添加新的 Provider"""
+    try:
+        provider = create_provider(data)
+        return {"success": True, "provider": provider}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"添加失败: {str(e)}")
+
+
+@router.put("/providers/{slug}")
+async def update_provider(slug: str, data: dict):
+    """更新 Provider"""
+    try:
+        provider = update_provider_details(slug, data)
+        return {"success": True, "provider": provider}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"更新失败: {str(e)}")
+
+
+@router.delete("/providers/{slug}")
+async def remove_provider(slug: str):
+    """删除 Provider"""
+    try:
+        delete_provider(slug)
+        return {"success": True, "message": f"Provider '{slug}' 已删除"}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"删除失败: {str(e)}")
 
 
 @router.post("/providers/{slug}/toggle")
