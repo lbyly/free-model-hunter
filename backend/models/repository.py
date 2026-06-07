@@ -323,13 +323,14 @@ def get_model_by_id(model_id: int) -> Optional[dict]:
             (d["id"],)
         ).fetchall()
         d["rate_limits"] = [dict(r) for r in rate_rows]
+        provider_slug = d.pop("provider_slug")
         d["provider"] = {
-            "slug": d.pop("provider_slug"),
+            "slug": provider_slug,
             "name": d.pop("provider_name"),
             "website": d.pop("provider_website"),
             "logo_url": d.pop("provider_logo"),
             # 从 .env 注入该 provider 对应的 API Key（未配置则为空串）
-            "api_key": get_api_key_for_slug(d["provider"]["slug"]),
+            "api_key": get_api_key_for_slug(provider_slug),
         }
         return d
 
