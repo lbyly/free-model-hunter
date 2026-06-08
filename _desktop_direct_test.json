@@ -1,0 +1,36 @@
+{
+  "total": 5,
+  "providers": [
+    {
+      "slug": "kilocode",
+      "name": "Kilo Gateway",
+      "total_models": 336,
+      "is_user_defined": false
+    },
+    {
+      "slug": "openrouter",
+      "name": "OpenRouter",
+      "total_models": 24,
+      "is_user_defined": false
+    },
+    {
+      "slug": "opencode-go",
+      "name": "OpenCode Go",
+      "total_models": 18,
+      "is_user_defined": false
+    },
+    {
+      "slug": "copilot",
+      "name": "GitHub Copilot",
+      "total_models": 16,
+      "is_user_defined": false
+    },
+    {
+      "slug": "gemini",
+      "name": "Google",
+      "total_models": 11,
+      "is_user_defined": false
+    }
+  ],
+  "fmh_count": 0
+}

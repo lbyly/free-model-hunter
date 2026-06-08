@@ -1,8 +1,9 @@
 {
-  "venvPath": ".",
-  "venv": "venv",
   "extraPaths": [
     "backend",
-    "venv/Lib/site-packages"
-  ]
+    "venv/Lib/site-packages",
+    "C:/Users/Administrator/.hermes/hermes-agent"
+  ],
+  "venv": "venv",
+  "venvPath": "."
 }

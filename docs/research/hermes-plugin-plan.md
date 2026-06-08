@@ -1,5 +1,13 @@
 # Free-Model-Hub × Hermes 插件集成方案
 
+> **⚠️ 本方案已被替代**
+>
+> 经过深入分析发现，Hermes 的 `ProviderProfile` 插件机制仅控制运行时调用行为（transport、auth、api_mode），**不填充模型选择器列表**。模型列表的来源是 `custom_providers`（config.yaml 配置节）。
+>
+> **最终方案已变更为 `方案 A'`**：Free-Model-Hub 新增 `GET /api/hermes/providers-config` API 端点，自动生成 Hermes `custom_providers` YAML 配置块。
+>
+> 详情见 [hermes-integration-analysis.md](./hermes-integration-analysis.md#33--最终选择配置导出-api)
+
 > 更新日期: 2026-06-07
 > 分支: `research/hermes-integration`
 

@@ -863,12 +863,6 @@
   </div>
 </div>
 
-<div class="banner" id="banner">
-  <div class="banner-inner">
-    <span>💡</span>
-    <span id="bannerText"><strong>🏆 旗舰级（Tier 1）</strong> — 顶级大模型，SOTA 能力，适合复杂任务</span>
-  </div>
-</div>
 
 <div class="container">
   <div id="loading" class="loading">
@@ -1168,7 +1162,6 @@ async function loadModels() {
     state.total = data.total;
     renderModels(data.models);
     renderPagination(data.total);
-    updateBanner();
   } catch (e) {
     grid.innerHTML = `<div class="empty"><div class="icon">😵</div>加载失败，请稍后重试</div>`;
   } finally {
@@ -1243,10 +1236,6 @@ function renderPagination(total) {
 function updateBanner() {
   if (state.tier === 'all') {
     bannerText.innerHTML = `<strong>📊 全部模型</strong> — 共 ${state.total} 个，按能力分级排列`;
-  } else {
-    const ti = TIER_LABELS[state.tier];
-    const ucText = state.useCase !== 'all' ? ` · ${USE_CASE_LABELS[state.useCase] || state.useCase}` : '';
-    bannerText.innerHTML = `<strong>${ti.icon} ${ti.label}</strong> — ${ti.desc}${ucText}（共 ${state.total} 个）`;
   }
 }
 

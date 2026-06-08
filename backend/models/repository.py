@@ -88,7 +88,9 @@ def create_provider(data: dict) -> dict:
         from config import update_api_key_for_slug
         update_api_key_for_slug(slug, api_key)
         
-    return get_provider_by_slug(slug)
+    result = get_provider_by_slug(slug)
+    assert result is not None
+    return result
 
 
 def update_provider_details(slug: str, data: dict) -> dict:
@@ -124,7 +126,9 @@ def update_provider_details(slug: str, data: dict) -> dict:
         from config import update_api_key_for_slug
         update_api_key_for_slug(slug, api_key)
         
-    return get_provider_by_slug(slug)
+    result = get_provider_by_slug(slug)
+    assert result is not None
+    return result
 
 
 def delete_provider(slug: str):
@@ -563,7 +567,7 @@ def seed_providers():
         {"name": "NotDiamond", "slug": "notdiamond", "website": "https://notdiamond.ai",
          "scrape_url": "https://api.notdiamond.ai/v2/models", "scraper_class": "NotDiamondScraper",
          "logo_url": ""},
-        {"name": "阿里云百炼", "slug": "alibaba_bailian", "website": "https://bailian.console.aliyun.com",
+        {"name": "Aliyun Bailian", "slug": "alibaba_bailian", "website": "https://bailian.console.aliyun.com",
          "scrape_url": "https://bailian.console.aliyun.com", "scraper_class": "AlibabaBailianScraper",
          "logo_url": "https://bailian.console.aliyun.com/favicon.ico"},
         {"name": "X.ai", "slug": "xai", "website": "https://x.ai/api",
@@ -605,7 +609,7 @@ def seed_providers():
         {"name": "Mollinations.ai", "slug": "mollinations", "website": "https://mollinations.ai",
          "scrape_url": "https://mollinations.ai", "scraper_class": "MollinationsScraper",
          "logo_url": ""},
-        {"name": "商汤日日新", "slug": "sensenova", "website": "https://platform.sensenova.cn",
+        {"name": "SenseNova", "slug": "sensenova", "website": "https://platform.sensenova.cn",
          "scrape_url": "https://token.sensenova.cn/v1/models", "scraper_class": "SenseNovaScraper",
          "logo_url": ""},
         {"name": "NVIDIA", "slug": "nvidia", "website": "https://build.nvidia.com/explore/discover",

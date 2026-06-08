@@ -1,0 +1,25 @@
+[
+    {
+        "base_url": "https://api.freemodelhub.com/v1",
+        "models": [
+            "gpt-4o",
+            "claude-3-5-sonnet",
+            "gemini-1.5-pro"
+        ],
+        "name": "Free Model Hub"
+    },
+    {
+        "base_url": "https://api.agnes.ai/v1",
+        "models": [
+            "agnes-chat-v1"
+        ],
+        "name": "Agnes AI"
+    },
+    {
+        "base_url": "https://api.cerebras.ai/v1",
+        "models": [
+            "llama3-70b"
+        ],
+        "name": "Cerebras"
+    }
+]
