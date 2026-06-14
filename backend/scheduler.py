@@ -74,5 +74,32 @@ def start_scheduler():
         replace_existing=True,
     )
 
+    # 添加每周日凌晨3点的测试与同步任务
+    scheduler.add_job(
+        weekly_test_and_sync_job,
+        CronTrigger(day_of_week='sun', hour=3, minute=0, timezone="Asia/Shanghai"),
+        id="weekly_test_and_sync",
+        replace_existing=True,
+    )
+    logger.info("  已添加每周任务: 每周日 3:00 测试模型并同步到客户端")
+
     scheduler.start()
     logger.info("定时调度器已启动")
+
+async def weekly_test_and_sync_job():
+    """每周全面测试所有模型，并同步到客户端配置"""
+    logger.info(f"[{datetime.now()}] 开始每周全量测试与同步任务")
+    
+    # 1. 运行常规爬取和连通性测试 (类似 refresh_job)
+    await refresh_job()
+    
+    # 2. 将结果同步到 Hermes 和 Openclaw
+    logger.info("测试完成，开始同步到本地客户端配置...")
+    try:
+        from sync_configs import sync_to_clients
+        sync_to_clients()
+    except Exception as e:
+        logger.error(f"同步到客户端失败: {e}")
+        
+    logger.info(f"[{datetime.now()}] 每周全量测试与同步任务完成")
+
