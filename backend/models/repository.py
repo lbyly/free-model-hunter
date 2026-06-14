@@ -618,6 +618,12 @@ def seed_providers():
         {"name": "智谱 AI", "slug": "zhipu", "website": "https://open.bigmodel.cn",
          "scrape_url": "https://open.bigmodel.cn/api/paas/v4/models", "scraper_class": "ZhipuScraper",
          "logo_url": ""},
+        {"name": "Novita AI", "slug": "novity", "website": "https://novita.ai",
+         "scrape_url": "https://api.novita.ai/v3/openai/models", "scraper_class": "NovityScraper",
+         "logo_url": ""},
+        {"name": "Blazeai", "slug": "blazeai", "website": "https://blazeai.boxu.dev",
+         "scrape_url": "https://blazeai.boxu.dev/api/models", "scraper_class": "BlazeaiScraper",
+         "logo_url": ""},
     ]
     with get_db() as db:
         for p in providers:
@@ -627,6 +633,13 @@ def seed_providers():
                     """INSERT INTO providers (name, slug, website, scrape_url, scraper_class, logo_url)
                        VALUES (?, ?, ?, ?, ?, ?)""",
                     (p["name"], p["slug"], p["website"], p["scrape_url"], p["scraper_class"], p["logo_url"])
+                )
+            else:
+                db.execute(
+                    """UPDATE providers 
+                       SET name = ?, website = ?, scrape_url = ?, scraper_class = ?, logo_url = ?
+                       WHERE slug = ?""",
+                    (p["name"], p["website"], p["scrape_url"], p["scraper_class"], p["logo_url"], p["slug"])
                 )
         print(f"  [OK] 已初始化 {len(providers)} 个 Provider")
 

@@ -58,9 +58,10 @@ class GeminiScraper(BaseScraper):
                 name=mid,
                 description=item.get("description", ""),
                 model_type=model_type,
-                is_free=False,
-                free_quota=None,
+                is_free=True,
+                free_quota="Gemini API 免费层：每分钟60次",
                 tags=["gemini", "google"],
+                rate_limits=[{"rate_type": "RPM", "limit_value": 60, "tier": "free"}],
             ))
         return models
 

@@ -41,6 +41,9 @@ ANYROUTER_API_KEY = os.getenv("ANYROUTER_API_KEY", "")
 NOTDIAMOND_API_KEY = os.getenv("NOTDIAMOND_API_KEY", "")
 AGNES_API_KEY = os.getenv("AGNES_API_KEY", "")
 CEREBRAS_API_KEY = os.getenv("CEREBRAS_API_KEY", "")
+NINEROUTER_API_KEY = os.getenv("NINEROUTER_API_KEY", "")
+NOVITY_API_KEY = os.getenv("NOVITY_API_KEY", "")
+BLAZEAI_API_KEY = os.getenv("BLAZEAI_API_KEY", "")
 OPENCODE_API_KEY = os.getenv("OPENCODE_API_KEY", "")
 MOLLINATIONS_API_KEY = os.getenv("MOLLINATIONS_API_KEY", "")
 SENSENOVA_API_KEY = os.getenv("SENSENOVA_API_KEY", "")
@@ -62,6 +65,9 @@ SLUG_TO_API_KEY_VAR = {
     "notdiamond": "NOTDIAMOND_API_KEY",
     "agnes": "AGNES_API_KEY",
     "cerebras": "CEREBRAS_API_KEY",
+    "9router": "NINEROUTER_API_KEY",
+    "novity": "NOVITY_API_KEY",
+    "blazeai": "BLAZEAI_API_KEY",
     "opencode": "OPENCODE_API_KEY",
     "mollinations": "MOLLINATIONS_API_KEY",
     "sensenova": "SENSENOVA_API_KEY",

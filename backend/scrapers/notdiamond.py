@@ -45,8 +45,8 @@ class NotDiamondScraper(BaseScraper):
             input_price = item.get("input_price", 0)
             output_price = item.get("output_price", 0)
 
-            # 定价为 0 的模型视为免费
-            is_free = (input_price == 0 and output_price == 0)
+            # 在 NotDiamond 免费额度内的路由模型视为免费
+            is_free = True
 
             tags = ["notdiamond"]
             if provider:
@@ -58,6 +58,7 @@ class NotDiamondScraper(BaseScraper):
                 description=f"Provider: {provider} | Context: {context_length} | Input: ${input_price}/M tokens | Output: ${output_price}/M tokens",
                 model_type="chat",
                 is_free=is_free,
+                free_quota="NotDiamond 免费路由",
                 context_window=str(context_length) if context_length else None,
                 tags=tags,
             ))

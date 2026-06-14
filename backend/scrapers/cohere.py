@@ -43,14 +43,14 @@ class CohereScraper(BaseScraper):
             mid = item.get("name", "") or item.get("id", "")
             if not mid:
                 continue
-            is_free = "free" in str(item.get("pricing", {})).lower() or item.get("is_free")
+            is_free = True
             models.append(ScrapedModel(
                 model_id=mid,
                 name=mid,
                 description=item.get("description", ""),
                 model_type=item.get("type", "chat"),
                 is_free=is_free,
-                free_quota="Cohere 免费 API 层（每日限制）" if is_free else None,
+                free_quota="Cohere 免费试用层",
                 tags=["cohere"],
             ))
         return models
