@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 class MiniMaxScraper(BaseScraper):
     provider_slug = "minimax"
+    chat_endpoint_base = "https://api.minimax.chat/v1"
 
     async def scrape(self) -> list[ScrapedModel]:
         try:

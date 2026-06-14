@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 class CohereScraper(BaseScraper):
     provider_slug = "cohere"
+    chat_endpoint_base = "https://api.cohere.ai/v1"
 
     async def scrape(self) -> list[ScrapedModel]:
         try:

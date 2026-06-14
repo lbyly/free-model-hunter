@@ -621,8 +621,8 @@ def seed_providers():
         {"name": "Novita AI", "slug": "novity", "website": "https://novita.ai",
          "scrape_url": "https://api.novita.ai/v3/openai/models", "scraper_class": "NovityScraper",
          "logo_url": ""},
-        {"name": "Blazeai", "slug": "blazeai", "website": "https://blazeai.boxu.dev",
-         "scrape_url": "https://blazeai.boxu.dev/api/models", "scraper_class": "BlazeaiScraper",
+        {"name": "CPAMC", "slug": "cpamc", "website": "",
+         "scrape_url": "http://127.0.0.1:8317/v1/models", "scraper_class": "CpamcScraper",
          "logo_url": ""},
     ]
     with get_db() as db:

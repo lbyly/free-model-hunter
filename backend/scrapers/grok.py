@@ -7,6 +7,7 @@ from .base import BaseScraper, ScrapedModel
 
 class GrokScraper(BaseScraper):
     provider_slug = "grok"
+    chat_endpoint_base = "https://api.x.ai/v1"
 
     async def scrape(self) -> list[ScrapedModel]:
         # Grok 通过 xAI API 提供

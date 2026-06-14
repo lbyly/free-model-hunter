@@ -103,12 +103,14 @@ from api.models import router as models_router
 from api.admin import router as admin_router
 from api.hermes_catalog import router as hermes_router
 from api.hermes_config_export import router as hermes_config_router
+from api.sync import router as sync_router
 
 app.include_router(providers_router)
 app.include_router(models_router)
 app.include_router(admin_router)
 app.include_router(hermes_router)
 app.include_router(hermes_config_router)
+app.include_router(sync_router)
 
 
 # 前端页面

@@ -74,7 +74,7 @@ class AgnesScraper(BaseScraper):
                     model_type="image", is_free=True,
                     free_quota="Agnes AI 免费层",
                     tags=["agnes", "image"]),
-                ScrapedModel(model_id="agnes-video-v2.0", name="Agnes Video V2.0",
+                ScrapedModel(model_id="agnes-video-2.0", name="Agnes Video 2.0",
                     model_type="vision", is_free=True,
                     free_quota="Agnes AI 免费层",
                     tags=["agnes", "video"]),

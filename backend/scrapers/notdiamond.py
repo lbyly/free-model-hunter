@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 class NotDiamondScraper(BaseScraper):
     provider_slug = "notdiamond"
+    chat_endpoint_base = "https://api.notdiamond.ai/v2"
 
     async def scrape(self) -> list[ScrapedModel]:
         try:

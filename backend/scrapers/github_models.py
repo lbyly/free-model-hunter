@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 class GitHubModelsScraper(BaseScraper):
     provider_slug = "github_models"
+    chat_endpoint_base = "https://models.inference.ai.azure.com"
 
     async def scrape(self) -> list[ScrapedModel]:
         """

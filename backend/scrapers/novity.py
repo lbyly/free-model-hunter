@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 class NovityScraper(BaseScraper):
     provider_slug = "novity"
+    chat_endpoint_base = "https://api.novita.ai/v3/openai"
 
     async def scrape(self) -> list[ScrapedModel]:
         if not NOVITY_API_KEY:

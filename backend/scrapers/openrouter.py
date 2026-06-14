@@ -7,6 +7,7 @@ from .base import BaseScraper, ScrapedModel
 
 class OpenRouterScraper(BaseScraper):
     provider_slug = "openrouter"
+    chat_endpoint_base = "https://openrouter.ai/api/v1"
 
     async def scrape(self) -> list[ScrapedModel]:
         async with httpx.AsyncClient(timeout=20) as client:

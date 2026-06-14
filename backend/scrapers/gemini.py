@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 class GeminiScraper(BaseScraper):
     provider_slug = "gemini"
+    chat_endpoint_base = "https://generativelanguage.googleapis.com/v1beta"
 
     # Gemini 使用非 OpenAI 兼容端点（:generateContent），需 URL 模板
     chat_endpoint_template = None  # 在 __init_subclass__ 或类级别动态设置

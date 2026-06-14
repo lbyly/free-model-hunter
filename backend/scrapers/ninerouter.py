@@ -14,11 +14,7 @@ class NineRouterScraper(BaseScraper):
     chat_api_key = NINEROUTER_API_KEY
     
     async def scrape(self) -> list[ScrapedModel]:
-        try:
-            return await self._scrape_via_api()
-        except Exception as e:
-            logger.warning(f"9router API 请求失败 ({type(e).__name__}: {e})")
-            return []
+        return await self._scrape_via_api()
 
     async def _scrape_via_api(self) -> list[ScrapedModel]:
         headers = {
@@ -39,12 +35,21 @@ class NineRouterScraper(BaseScraper):
         models = []
         for item in data.get("data", []):
             mid = item.get("id", "")
+            lower_mid = mid.lower()
+            
+            # 9router 返回了 99 个模型，但我们只关心免费的
+            if "free" not in lower_mid:
+                continue
+            # 排除名为 Freemode/ 的收费/失效节点
+            if lower_mid.startswith("freemode/"):
+                continue
+                
             models.append(ScrapedModel(
                 model_id=mid,
                 name=mid,
                 description=item.get("description", ""),
                 model_type="chat",
-                is_free=False,  # 设置为 False，交由 verify_free_models 发送 'Hi' 测试
+                is_free=False,  # 设置为 False，让 verify_free_models 去发送 Hi 实际测试它们是否连通
                 tags=["9router"],
             ))
         return models

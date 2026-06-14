@@ -859,6 +859,7 @@
   <div class="filter-right">
     <input class="search-box" id="searchInput" placeholder="🔍 搜索模型名称..." />
     <button class="filter-btn" id="refreshBtn">🔄 刷新数据</button>
+    <button class="filter-btn" id="syncClientsBtn">📤 同步客户端</button>
     <button class="filter-btn" id="manageProvidersBtn">⚙️</button>
   </div>
 </div>
@@ -1288,6 +1289,27 @@ document.getElementById('refreshBtn').addEventListener('click', async () => {
   document.getElementById('refreshBtn').textContent = '🔄 刷新数据';
 });
 
+document.getElementById('syncClientsBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('syncClientsBtn');
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ 同步中...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/sync/clients', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      alert(`✅ ${data.message}\n\nHermes (${data.hermes_updated ? '已更新' : '跳过'}):\n${data.hermes_path}\n\nOpenClaw (${data.openclaw_updated ? '已更新' : '跳过'}):\n${data.openclaw_path}`);
+    } else {
+      alert('❌ 同步失败: ' + data.message);
+    }
+  } catch (e) {
+    console.error('同步请求失败', e);
+    alert('❌ 同步请求失败，请检查后端运行状态。');
+  }
+  btn.textContent = originalText;
+  btn.disabled = false;
+});
+
 // ===== 视图模式切换 =====
 function updateLayoutButtonsUI() {
   const cardBtn = document.getElementById('layoutCardBtn');
@@ -1326,7 +1348,7 @@ const PROVIDER_EMOJIS = {
   'groq': '⚡', 'cerebras': '🔵', 'alibaba_bailian': '☁️', 'agnes': '💜',
   'zen': '🧘', 'openrouter': '🔀', 'cohere': '📄', 'gemini': '🔮',
   'github_models': '🐙', 'notdiamond': '💎', 'grok': '🐦', 'anyrouter': '🌐',
-  'opencode': '📖', 'minimax': '🎯', 'default': '🏢',
+  'opencode': '📖', 'minimax': '🎯', 'cpamc': '🏢', 'default': '🏢',
 };
 
 function getProviderEmoji(slug) {

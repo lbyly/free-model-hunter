@@ -7,6 +7,7 @@ from .base import BaseScraper, ScrapedModel
 
 class ZenScraper(BaseScraper):
     provider_slug = "zen"
+    chat_endpoint_base = "https://opencode.ai/zen/v1"
 
     async def scrape(self) -> list[ScrapedModel]:
         known_free = [
