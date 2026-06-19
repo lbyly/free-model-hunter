@@ -70,6 +70,10 @@
   .chip-t2 .num { color: var(--tier2); }
   .chip-t3 { border-color: rgba(126,200,160,0.3); }
   .chip-t3 .num { color: var(--tier3); }
+  .chip-stars { letter-spacing: 1px; font-size: 12px; }
+  .chip-t1 .chip-stars { color: var(--tier1); }
+  .chip-t2 .chip-stars { color: var(--tier2); }
+  .chip-t3 .chip-stars { color: var(--tier3); }
 
   /* ===== 筛选区 ===== */
   .filters {
@@ -146,7 +150,8 @@
     line-height: 1.3;
   }
   .tier-badge {
-    font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+    font-size: 13px; font-weight: 700; padding: 2px 8px; border-radius: 10px;
+    letter-spacing: 1px; line-height: 1;
     white-space: nowrap; flex-shrink: 0;
   }
   .tier-badge.t1 { background: var(--t1-bg); color: var(--tier1); }
@@ -828,13 +833,13 @@
     </div>
     <div class="stats-bar" id="statsBar">
       <div class="stat-chip chip-t1 active" data-tier="1">
-        🏆 <span class="num">-</span> 旗舰级
+        <span class="chip-stars">★★★</span> <span class="num">-</span> 旗舰级
       </div>
       <div class="stat-chip chip-t2" data-tier="2">
-        ⚡ <span class="num">-</span> 增强级
+        <span class="chip-stars">★★</span> <span class="num">-</span> 增强级
       </div>
       <div class="stat-chip chip-t3" data-tier="3">
-        🛠️ <span class="num">-</span> 基础级
+        <span class="chip-stars">★</span> <span class="num">-</span> 基础级
       </div>
       <div class="stat-chip" data-tier="all">
         📊 <span class="num">-</span> 全部模型
@@ -1107,9 +1112,9 @@ const searchInput = document.getElementById('searchInput');
 const bannerText = document.getElementById('bannerText');
 
 const TIER_LABELS = {
-  1: { icon: '🏆', label: '旗舰级', desc: '顶级大模型，SOTA 能力，适合复杂任务' },
-  2: { icon: '⚡', label: '增强级', desc: '高性能模型，足以应对大多数日常任务' },
-  3: { icon: '🛠️', label: '基础级', desc: '轻量专用模型，适合嵌入、重排等任务' },
+  1: { stars: '★★★', label: '旗舰级', desc: '顶级大模型，SOTA 能力，适合复杂任务' },
+  2: { stars: '★★', label: '增强级', desc: '高性能模型，足以应对大多数日常任务' },
+  3: { stars: '★', label: '基础级', desc: '轻量专用模型，适合嵌入、重排等任务' },
 };
 
 const USE_CASE_LABELS = {
@@ -1194,7 +1199,7 @@ function renderModels(models) {
 
   grid.innerHTML = models.map(m => {
     const tier = m.capability_tier || 2;
-    const ti = TIER_LABELS[tier] || { label: '' };
+    const ti = TIER_LABELS[tier] || { stars: '★★', label: '增强级', desc: '' };
     const ucLabel = USE_CASE_LABELS[m.use_case] || m.use_case;
     const freeBadge = m.is_free ? `<span class="meta-tag free">✅ 免费</span>` : '';
     const contextHtml = m.context_window ? `<span>📐 ${m.context_window}</span>` : '';
@@ -1205,7 +1210,7 @@ function renderModels(models) {
       <div class="model-card tier${tier}" onclick="showModelDetail('${m.provider.slug}', '${m.model_id}')">
         <div class="card-header">
           <div class="model-name">${m.name}</div>
-          <span class="tier-badge t${tier}">${ti.icon} ${ti.label}</span>
+          <span class="tier-badge t${tier}" title="${ti.label}：${ti.desc}">${ti.stars || '★★'}</span>
         </div>
         <div class="card-body">
           <div class="card-desc">${desc || '免费模型，可通过 API 直接调用'}</div>
@@ -1753,6 +1758,11 @@ async function showModelDetail(providerSlug, modelId) {
 function renderModelDetail(m) {
   const apiBaseUrl = getProviderApiBase(m.provider.slug);
   const isGemini = m.provider.slug === 'gemini';
+
+  // 能力分级（星级）
+  const tier = m.capability_tier || 2;
+  const ti = TIER_LABELS[tier] || { stars: '★★', label: '增强级', desc: '' };
+  const tierHtml = `<span class="tier-badge t${tier}" style="font-size:15px">${ti.stars}</span> <strong>${ti.label}</strong> <span style="color:var(--text2);font-size:12px">${ti.desc}</span>`;
   
   // 构造 cURL 示例
   let curlSnippet = '';
@@ -1796,6 +1806,13 @@ function renderModelDetail(m) {
 
   detailBody.innerHTML = `
     <div class="detail-section">
+      <div class="detail-row">
+        <div class="detail-label">⭐ 能力分级</div>
+        <div class="detail-value">
+          ${tierHtml}
+        </div>
+      </div>
+
       <div class="detail-row">
         <div class="detail-label">🏢 提供商</div>
         <div class="detail-value">
