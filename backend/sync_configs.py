@@ -21,6 +21,105 @@ logger = logging.getLogger(__name__)
 
 HERMES_CONFIG_PATH = Path("C:/Users/Administrator/.hermes/config.yaml")
 OPENCLAW_CONFIG_PATH = Path("C:/Users/Administrator/.openclaw/openclaw.json")
+HERMES_DESKTOP_CONFIG_PATH = Path("C:/Users/Administrator/AppData/Local/hermes/config.yaml")
+
+SCRAPER_META = {
+    "ag": ("AGNES_API_KEY", "Agnes AI"),
+    "ce": ("CEREBRAS_API_KEY", "Cerebras"),
+    "gr": ("GROQ_API_KEY", "Groq"),
+    "mo": ("MOLLINATIONS_API_KEY", "Mollinations.ai"),
+    "nv": ("NVIDIA_API_KEY", "NVIDIA"),
+    "xa": ("XAI_API_KEY", "X.ai"),
+    "se": ("SENSENOVA_API_KEY", "商汤日日新"),
+    "al": ("ALIBABA_BAILIAN_API_KEY", "阿里云百炼"),
+}
+
+def _find_key_env(name: str) -> str:
+    for env, display_name in SCRAPER_META.values():
+        if name.lower() == display_name.lower() or name.lower() in display_name.lower():
+            return env
+    name_lower = name.lower()
+    if "agnes" in name_lower:
+        return "AGNES_API_KEY"
+    if "cerebras" in name_lower:
+        return "CEREBRAS_API_KEY"
+    if "groq" in name_lower:
+        return "GROQ_API_KEY"
+    if "mollin" in name_lower or "pollin" in name_lower:
+        return "MOLLINATIONS_API_KEY"
+    if "nvidia" in name_lower:
+        return "NVIDIA_API_KEY"
+    if "x.ai" in name_lower or "xai" in name_lower:
+        return "XAI_API_KEY"
+    if "sensenova" in name_lower or "商汤" in name_lower:
+        return "SENSENOVA_API_KEY"
+    if "alibaba" in name_lower or "bailian" in name_lower or "阿里云" in name_lower or "百炼" in name_lower:
+        return "ALIBABA_BAILIAN_API_KEY"
+    return ""
+
+def sync_hermes_desktop(providers_data):
+    if not HERMES_DESKTOP_CONFIG_PATH.exists():
+        logger.warning(f"Hermes Desktop config not found at {HERMES_DESKTOP_CONFIG_PATH}")
+        return
+
+    backup_file(HERMES_DESKTOP_CONFIG_PATH)
+
+    try:
+        with open(HERMES_DESKTOP_CONFIG_PATH, 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f) or {}
+    except yaml.YAMLError as e:
+        logger.error(f"Failed to parse Hermes Desktop YAML: {e}")
+        return
+
+    old_custom = config.get("custom_providers", [])
+    if old_custom is None:
+        old_custom = []
+
+    new_custom = []
+    for slug, data in providers_data.items():
+        name = data["name"].strip()
+        base_url = data["base_url"].strip().rstrip("/")
+        if not name or not base_url:
+            continue
+        
+        key_env = _find_key_env(name)
+        model_ids = [m["id"] for m in data["models"]]
+        
+        entry = {
+            "name": name,
+            "base_url": base_url,
+            "key_env": key_env,
+            "discover_models": False,
+        }
+        if model_ids:
+            entry["models"] = model_ids
+        
+        new_custom.append(entry)
+
+    # 保留非 FMH 自定义 providers
+    fmh_names_lower = {data["name"].strip().lower() for data in providers_data.values()}
+    fmh_key_envs = {_find_key_env(data["name"]) for data in providers_data.values()}
+    fmh_key_envs = {k for k in fmh_key_envs if k}
+
+    preserved = []
+    for cp in old_custom:
+        if not isinstance(cp, dict):
+            preserved.append(cp)
+            continue
+        cp_name = str(cp.get("name", "")).strip().lower()
+        if cp_name in fmh_names_lower:
+            continue
+        cp_key_env = str(cp.get("key_env", "")).strip().upper()
+        if cp_key_env in fmh_key_envs and cp_key_env:
+            continue
+        preserved.append(cp)
+
+    config["custom_providers"] = new_custom + preserved
+
+    with open(HERMES_DESKTOP_CONFIG_PATH, 'w', encoding='utf-8') as f:
+        yaml.dump(config, f, default_flow_style=False, allow_unicode=True, sort_keys=False, indent=2)
+    
+    logger.info("Hermes Desktop config updated successfully.")
 
 def backup_file(filepath: Path):
     if not filepath.exists():
@@ -77,11 +176,11 @@ def get_providers_data():
             if not api_key:
                 api_key = get_api_key_for_slug(slug)
 
-            # 只查询免费模型
+            # 查询所有相关的模型
             cursor.execute("""
                 SELECT model_id, name, context_window
                 FROM models
-                WHERE provider_id = ? AND is_free = 1
+                WHERE provider_id = ?
                 ORDER BY name
             """, (prow["id"],))
             model_rows = cursor.fetchall()
@@ -171,29 +270,104 @@ def sync_openclaw(providers_data):
     if 'providers' not in config['models']:
         config['models']['providers'] = {}
 
+    oc_providers = config['models']['providers']
+
+    name_to_slug = {
+        "9router": "9router", "Agnes AI": "agnes", "Aliyun Bailian": "alibaba_bailian",
+        "Cerebras": "cerebras", "Cohere": "cohere",
+        "Gemini": "gemini", "GitHub Models": "github_models", "Grok": "grok",
+        "Groq": "groq", "MiniMax": "minimax", "Mollinations.ai": "mollinations",
+        "NVIDIA": "nvidia", "NotDiamond": "notdiamond", "Novita AI": "novity",
+        "OpenRouter": "openrouter", "SenseNova": "sensenova", "X.ai": "xai",
+        "Zen API": "zen",
+    }
+
+    icon_map = {
+        "alibaba_bailian": "☁️", "openrouter": "🌌", "zen": "🧘", "nvidia": "👁️",
+        "sensenova": "🌟", "xai": "✖️", "groq": "⚡", "cerebras": "🧠",
+        "agnes": "👧", "mollinations": "🌸", "9router": "🧭", "cohere": "⌨️",
+        "gemini": "🔮", "github_models": "🐙", "grok": "✖️", "minimax": "Ⓜ️",
+        "notdiamond": "💎", "novity": "🛸", "cpamc": "🏢", "google": "🔍",
+        "anthropic": "🧠", "openai": "✨",
+    }
+
+    valid_slugs = []
     for slug, data in providers_data.items():
-        # Openclaw 格式
-        models_list = []
+        mapped_slug = name_to_slug.get(data["name"], slug)
+        valid_slugs.append(mapped_slug)
+
+        existing_provider = oc_providers.get(mapped_slug, {})
+        existing_models_map = {m["id"]: m.get("name", m["id"]) for m in existing_provider.get("models", [])}
+
+        oc_models = []
         for m in data["models"]:
-            models_list.append({
+            mid = m["id"]
+            if mid in existing_models_map:
+                m_name = existing_models_map[mid]
+            else:
+                icon = icon_map.get(mapped_slug, "📦")
+                m_name = f"{icon} [{mapped_slug}] {mid}"
+
+            m_entry = {
                 "contextWindow": m["context_length"],
-                "id": m["id"],
+                "id": mid,
                 "input": ["text"],
                 "maxTokens": 8192,
-                "name": m["name"]
-            })
+                "name": m_name
+            }
+            oc_models.append(m_entry)
 
-        config['models']['providers'][slug] = {
-            "api": "openai-completions",
-            "apiKey": data["api_key"] or "",
-            "baseUrl": data["base_url"],
-            "models": models_list
-        }
+            # 注册到 agents.defaults.models 中，使其显示在 Web UI 列表
+            full_id = f"{mapped_slug}/{mid}"
+            if "agents" not in config:
+                config["agents"] = {}
+            if "defaults" not in config["agents"]:
+                config["agents"]["defaults"] = {}
+            if "models" not in config["agents"]["defaults"]:
+                config["agents"]["defaults"]["models"] = {}
+            if full_id not in config["agents"]["defaults"]["models"]:
+                config["agents"]["defaults"]["models"][full_id] = {}
+
+        if mapped_slug in oc_providers:
+            existing = oc_providers[mapped_slug]
+            existing["models"] = oc_models
+            if not existing.get("baseUrl"):
+                existing["baseUrl"] = data["base_url"]
+            if not existing.get("apiKey") and data["api_key"]:
+                existing["apiKey"] = data["api_key"]
+            existing["api"] = "openai-completions"
+        else:
+            entry = {
+                "api": "openai-completions",
+                "baseUrl": data["base_url"],
+                "models": oc_models,
+            }
+            if data["api_key"]:
+                entry["apiKey"] = data["api_key"]
+            oc_providers[mapped_slug] = entry
+
+    # 只清理 FMH 范围内且已被删除的提供商，不碰非 FMH 的个人渠道
+    fmh_possible_slugs = set(name_to_slug.values())
+    to_delete = [s for s in oc_providers.keys() if s in fmh_possible_slugs and s not in valid_slugs]
+    for s in to_delete:
+        del oc_providers[s]
+
+    # 清理 agents.defaults.models
+    if "agents" in config and "defaults" in config["agents"] and "models" in config["agents"]["defaults"]:
+        defaults_models = config["agents"]["defaults"]["models"]
+        keys_to_delete = []
+        for full_id in defaults_models.keys():
+            for s in to_delete:
+                if full_id.startswith(f"{s}/"):
+                    keys_to_delete.append(full_id)
+                    break
+        for k in keys_to_delete:
+            del defaults_models[k]
 
     with open(OPENCLAW_CONFIG_PATH, 'w', encoding='utf-8') as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
     
-    logger.info(f"Openclaw config updated successfully.")
+    logger.info("Openclaw config updated successfully with details and emojis.")
 
 def sync_to_clients():
     logger.info("Fetching providers data from database...")
@@ -204,6 +378,7 @@ def sync_to_clients():
 
     logger.info(f"Found {len(providers_data)} active providers with free models.")
     sync_hermes(providers_data)
+    sync_hermes_desktop(providers_data)
     sync_openclaw(providers_data)
     logger.info("Sync to clients completed.")
 

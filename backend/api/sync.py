@@ -3,6 +3,9 @@ from typing import Dict, Any
 import os
 import re
 import json
+import yaml
+import shutil
+from datetime import datetime
 
 from .hermes_config_export import hermes_providers_config
 
@@ -10,6 +13,48 @@ router = APIRouter(prefix="/api/sync", tags=["sync"])
 
 HERMES_PATH = r"C:\Users\Administrator\.hermes\config.yaml"
 OPENCLAW_PATH = r"C:\Users\Administrator\.openclaw\openclaw.json"
+HERMES_DESKTOP_PATH = r"C:\Users\Administrator\AppData\Local\hermes\config.yaml"
+
+SCRAPER_META = {
+    "ag": ("AGNES_API_KEY", "Agnes AI"),
+    "ce": ("CEREBRAS_API_KEY", "Cerebras"),
+    "gr": ("GROQ_API_KEY", "Groq"),
+    "mo": ("MOLLINATIONS_API_KEY", "Mollinations.ai"),
+    "nv": ("NVIDIA_API_KEY", "NVIDIA"),
+    "xa": ("XAI_API_KEY", "X.ai"),
+    "se": ("SENSENOVA_API_KEY", "商汤日日新"),
+    "al": ("ALIBABA_BAILIAN_API_KEY", "阿里云百炼"),
+}
+
+def _find_key_env(name: str) -> str:
+    for env, display_name in SCRAPER_META.values():
+        if name.lower() == display_name.lower() or name.lower() in display_name.lower():
+            return env
+    name_lower = name.lower()
+    if "agnes" in name_lower:
+        return "AGNES_API_KEY"
+    if "cerebras" in name_lower:
+        return "CEREBRAS_API_KEY"
+    if "groq" in name_lower:
+        return "GROQ_API_KEY"
+    if "mollin" in name_lower or "pollin" in name_lower:
+        return "MOLLINATIONS_API_KEY"
+    if "nvidia" in name_lower:
+        return "NVIDIA_API_KEY"
+    if "x.ai" in name_lower or "xai" in name_lower:
+        return "XAI_API_KEY"
+    if "sensenova" in name_lower or "商汤" in name_lower:
+        return "SENSENOVA_API_KEY"
+    if "alibaba" in name_lower or "bailian" in name_lower or "阿里云" in name_lower or "百炼" in name_lower:
+        return "ALIBABA_BAILIAN_API_KEY"
+    return ""
+
+def backup_file(filepath: str):
+    if not os.path.exists(filepath):
+        return
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_path = filepath + f".bak.{timestamp}"
+    shutil.copy2(filepath, backup_path)
 
 @router.post("/clients")
 async def sync_clients():
@@ -160,8 +205,9 @@ async def sync_clients():
                         entry["apiKey"] = api_key
                     oc_providers[slug] = entry
 
-            # 清理在 FMH 中已删除的提供商
-            to_delete = [slug for slug in oc_providers.keys() if slug not in valid_slugs]
+            # 清理在 FMH 中已删除的提供商，仅限属于 FMH 的 slug，防止误删用户自定义的个人渠道
+            fmh_possible_slugs = set(name_to_slug.values())
+            to_delete = [slug for slug in oc_providers.keys() if slug in fmh_possible_slugs and slug not in valid_slugs]
             for slug in to_delete:
                 del oc_providers[slug]
                 
@@ -182,11 +228,75 @@ async def sync_clients():
                 json.dump(oc, f, indent=2, ensure_ascii=False)
             oc_updated = True
 
+        # 4. 同步到 Hermes Desktop
+        hermes_desktop_updated = False
+        if os.path.exists(HERMES_DESKTOP_PATH):
+            try:
+                backup_file(HERMES_DESKTOP_PATH)
+                with open(HERMES_DESKTOP_PATH, 'r', encoding='utf-8') as f:
+                    config = yaml.safe_load(f) or {}
+
+                old_custom = config.get("custom_providers", [])
+                if old_custom is None:
+                    old_custom = []
+
+                new_custom = []
+                for p in providers:
+                    name = p.get("name", "").strip()
+                    base_url = (p.get("base_url") or "").strip().rstrip("/")
+                    if not name or not base_url:
+                        continue
+                    
+                    key_env = _find_key_env(name)
+                    models = p.get("models", {})
+                    model_ids = sorted(models.keys()) if isinstance(models, dict) else []
+                    
+                    entry = {
+                        "name": name,
+                        "base_url": base_url,
+                        "key_env": key_env,
+                        "discover_models": False,
+                    }
+                    if model_ids:
+                        entry["models"] = model_ids
+                    if p.get("api_key"):
+                        entry["api_key"] = p.get("api_key")
+                    
+                    new_custom.append(entry)
+
+                # 保留非 FMH 自定义 providers
+                fmh_names_lower = {p.get("name", "").strip().lower() for p in providers}
+                fmh_key_envs = {_find_key_env(p.get("name", "")) for p in providers}
+                fmh_key_envs = {k for k in fmh_key_envs if k}
+
+                preserved = []
+                for cp in old_custom:
+                    if not isinstance(cp, dict):
+                        preserved.append(cp)
+                        continue
+                    cp_name = str(cp.get("name", "")).strip().lower()
+                    if cp_name in fmh_names_lower:
+                        continue
+                    cp_key_env = str(cp.get("key_env", "")).strip().upper()
+                    if cp_key_env in fmh_key_envs and cp_key_env:
+                        continue
+                    preserved.append(cp)
+
+                config["custom_providers"] = new_custom + preserved
+
+                with open(HERMES_DESKTOP_PATH, 'w', encoding='utf-8') as f:
+                    yaml.dump(config, f, default_flow_style=False, allow_unicode=True, sort_keys=False, indent=2)
+                hermes_desktop_updated = True
+            except Exception as e:
+                print(f"Error syncing to Hermes Desktop: {e}")
+
         return {
             "success": True,
-            "message": f"Successfully synced {len(providers)} providers to clients.",
+            "message": f"Successfully synced {len(providers)} providers to 3 clients.",
             "hermes_updated": hermes_updated,
             "hermes_path": HERMES_PATH,
+            "hermes_desktop_updated": hermes_desktop_updated,
+            "hermes_desktop_path": HERMES_DESKTOP_PATH,
             "openclaw_updated": oc_updated,
             "openclaw_path": OPENCLAW_PATH
         }
