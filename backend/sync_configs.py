@@ -204,6 +204,16 @@ def get_providers_data():
                     "context_length": ctx_int
                 })
 
+            if slug == "cerebras":
+                extra_cerebras = [
+                    {"id": "llama3.1-8b", "name": "llama3.1-8b", "context_length": 131072},
+                    {"id": "qwen-3-235b-a22b-instruct-2507", "name": "qwen-3-235b-a22b-instruct-2507", "context_length": 131072},
+                    {"id": "zai-glm-4.7", "name": "zai-glm-4.7", "context_length": 131072}
+                ]
+                for em in extra_cerebras:
+                    if not any(m["id"] == em["id"] for m in models):
+                        models.append(em)
+
             providers_data[slug] = {
                 "name": prow["name"] or slug,
                 "base_url": base_url,
@@ -279,7 +289,8 @@ def sync_openclaw(providers_data):
         "Groq": "groq", "MiniMax": "minimax", "Mollinations.ai": "mollinations",
         "NVIDIA": "nvidia", "NotDiamond": "notdiamond", "Novita AI": "novity",
         "OpenRouter": "openrouter", "SenseNova": "sensenova", "X.ai": "xai",
-        "Zen API": "zen",
+        "Zen API": "zen", "OmniRoute": "omniroute", "omniroute": "omniroute",
+        "CPAMC": "cpamc", "cpamc": "cpamc",
     }
 
     icon_map = {
@@ -288,7 +299,8 @@ def sync_openclaw(providers_data):
         "agnes": "👧", "mollinations": "🌸", "9router": "🧭", "cohere": "⌨️",
         "gemini": "🔮", "github_models": "🐙", "grok": "✖️", "minimax": "Ⓜ️",
         "notdiamond": "💎", "novity": "🛸", "cpamc": "🏢", "google": "🔍",
-        "anthropic": "🧠", "openai": "✨",
+        "anthropic": "🧠", "openai": "✨", "omniroute": "🧭",
+        "anyrouter": "🔀", "opencode": "💻", "zhipu": "💡", "blazeai": "🔥",
     }
 
     valid_slugs = []
@@ -302,11 +314,34 @@ def sync_openclaw(providers_data):
         oc_models = []
         for m in data["models"]:
             mid = m["id"]
+            
+            # 净化或重新生成模型的显示名称，剥除 omniroute/ 前缀，确保符合 emoji [provider] ID 格式
+            need_rebuild = True
             if mid in existing_models_map:
                 m_name = existing_models_map[mid]
-            else:
+                # 检查是否已符合格式且不含多余的前缀
+                import re
+                if "omniRoute/" not in m_name and re.match(r'^[^\x00-\x7f]\ufe0f?\s*\[[^\]]+\]\s+', m_name):
+                    need_rebuild = False
+            
+            if need_rebuild:
                 icon = icon_map.get(mapped_slug, "📦")
-                m_name = f"{icon} [{mapped_slug}] {mid}"
+                # 剥除原名字或 ID 中的 omniroute/ 前缀，再生成干净 of name
+                raw_name = existing_models_map.get(mid, mid)
+                # 稳健剥除 omniroute/ (不区分大小写)
+                import re
+                cleaned_name = re.sub(r'^(omniroute)/', '', raw_name, flags=re.IGNORECASE)
+                # 稳健剥除已存在的 emoji+provider 格式前缀，拿到最基础的模型名
+                prefix_re = re.compile(r'^[^\S\r\n]*([^\x00-\x7f]\ufe0f?)\s*\[[^\]]+\]\s+')
+                while True:
+                    match_pref = prefix_re.match(cleaned_name)
+                    if not match_pref:
+                        break
+                    cleaned_name = cleaned_name[match_pref.end():]
+                cleaned_name = re.sub(r'^(omniroute)/', '', cleaned_name, flags=re.IGNORECASE)
+                m_name = f"{icon} [{mapped_slug}] {cleaned_name}"
+            else:
+                m_name = existing_models_map[mid]
 
             m_entry = {
                 "contextWindow": m["context_length"],
@@ -381,6 +416,16 @@ def sync_to_clients():
     sync_hermes_desktop(providers_data)
     sync_openclaw(providers_data)
     logger.info("Sync to clients completed.")
+
+    # 自动运行重命名脚本，确保格式一致
+    import subprocess
+    import sys
+    try:
+        rename_script = r"C:\Users\Administrator\.openclaw\rename_models.py"
+        subprocess.run([sys.executable, rename_script], check=True)
+        logger.info("Automatically executed rename_models.py successfully.")
+    except Exception as e:
+        logger.error(f"Failed to auto-run rename_models.py: {e}")
 
 if __name__ == "__main__":
     sync_to_clients()

@@ -66,6 +66,8 @@ async def refresh_all():
 async def refresh_provider(slug: str):
     """手动触发单个 Provider 刷新"""
     from models.repository import get_provider_by_slug
+    import logging
+    logger = logging.getLogger(__name__)
 
     provider = get_provider_by_slug(slug)
     if not provider:
@@ -78,13 +80,16 @@ async def refresh_provider(slug: str):
 
     start = time.time()
     try:
+        logger.info(f"Starting scraper for {slug}...")
         success, models, error = await scraper.run()
         duration = time.time() - start
+        logger.info(f"Scraper {slug} run result: success={success}, count={len(models)}, error={error}")
 
         if success:
             model_dicts = [m.to_dict() for m in models]
             count = upsert_models(provider["id"], model_dicts)
             log_scrape(provider["id"], "success", count, duration=duration)
+            logger.info(f"Upsert models for {slug} completed with count={count}")
             return {"success": True, "provider": slug, "count": count}
         else:
             log_scrape(provider["id"], "failed", 0, error, duration)
@@ -94,6 +99,7 @@ async def refresh_provider(slug: str):
     except Exception as e:
         duration = time.time() - start
         log_scrape(provider["id"], "failed", 0, str(e), duration)
+        logger.error(f"Scrape error for {slug}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Scrape error: {str(e)}")
 
 

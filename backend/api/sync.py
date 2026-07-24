@@ -115,7 +115,7 @@ async def sync_clients():
                 "Groq": "groq", "MiniMax": "minimax", "Mollinations.ai": "mollinations",
                 "NVIDIA": "nvidia", "NotDiamond": "notdiamond", "Novita AI": "novity",
                 "OpenRouter": "openrouter", "SenseNova": "sensenova", "X.ai": "xai",
-                "Zen API": "zen",
+                "Zen API": "zen", "CPAMC": "cpamc", "cpamc": "cpamc",
             }
 
             # Emoji 图标映射：所有模型名统一加 "emoji [provider] " 前缀
