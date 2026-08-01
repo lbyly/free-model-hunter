@@ -145,8 +145,8 @@ class BaseScraper(ABC):
         already_free = [m for m in models if m.is_free]
         to_test = [m for m in models if not m.is_free]
 
-        # 对于 Pro 账户（如 google, gemini, antigravity, agnes），跳过发送 Hi 测试，以免消耗额度，直接返回
-        if self.provider_slug in ["google", "gemini", "antigravity", "agnes"]:
+        # 对于 Pro 账户和聚合中转（如 google, gemini, antigravity, agnes, ds2api, manifest, notdiamond, nvidia），跳过发送 Hi 测试，直接返回
+        if self.provider_slug in ["google", "gemini", "antigravity", "agnes", "ds2api", "manifest", "notdiamond", "nvidia"]:
             for m in to_test:
                 m.is_free = True
                 already_free.append(m)

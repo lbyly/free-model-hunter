@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 class CpamcScraper(BaseScraper):
     provider_slug = "cpamc"
     chat_endpoint_base = "http://127.0.0.1:8317/v1"
+    chat_api_key = CPAMC_API_KEY
 
     async def scrape(self) -> list[ScrapedModel]:
         """调用本地中转 API 获取模型列表"""

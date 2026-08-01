@@ -32,6 +32,7 @@ SCRAPER_META = {
     "xa": ("XAI_API_KEY", "X.ai"),
     "se": ("SENSENOVA_API_KEY", "商汤日日新"),
     "al": ("ALIBABA_BAILIAN_API_KEY", "阿里云百炼"),
+    "ma": ("MANIFEST_API_KEY", "Manifest"),
 }
 
 def _find_key_env(name: str) -> str:
@@ -55,6 +56,8 @@ def _find_key_env(name: str) -> str:
         return "SENSENOVA_API_KEY"
     if "alibaba" in name_lower or "bailian" in name_lower or "阿里云" in name_lower or "百炼" in name_lower:
         return "ALIBABA_BAILIAN_API_KEY"
+    if "manifest" in name_lower:
+        return "MANIFEST_API_KEY"
     return ""
 
 def sync_hermes_desktop(providers_data):
@@ -290,7 +293,7 @@ def sync_openclaw(providers_data):
         "NVIDIA": "nvidia", "NotDiamond": "notdiamond", "Novita AI": "novity",
         "OpenRouter": "openrouter", "SenseNova": "sensenova", "X.ai": "xai",
         "Zen API": "zen", "OmniRoute": "omniroute", "omniroute": "omniroute",
-        "CPAMC": "cpamc", "cpamc": "cpamc",
+        "CPAMC": "cpamc", "cpamc": "cpamc", "Manifest": "manifest",
     }
 
     icon_map = {
@@ -301,6 +304,7 @@ def sync_openclaw(providers_data):
         "notdiamond": "💎", "novity": "🛸", "cpamc": "🏢", "google": "🔍",
         "anthropic": "🧠", "openai": "✨", "omniroute": "🧭",
         "anyrouter": "🔀", "opencode": "💻", "zhipu": "💡", "blazeai": "🔥",
+        "manifest": "📝",
     }
 
     valid_slugs = []

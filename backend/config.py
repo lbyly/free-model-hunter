@@ -10,7 +10,7 @@ try:
     from dotenv import load_dotenv
     env_path = Path(__file__).resolve().parent / ".env"
     if env_path.exists():
-        load_dotenv(env_path)
+        load_dotenv(env_path, override=True)
 except ImportError:
     pass
 
@@ -49,6 +49,7 @@ MOLLINATIONS_API_KEY = os.getenv("MOLLINATIONS_API_KEY", "")
 SENSENOVA_API_KEY = os.getenv("SENSENOVA_API_KEY", "")
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "")
 ZHIPU_API_KEY = os.getenv("ZHIPU_API_KEY", "")
+MANIFEST_API_KEY = os.getenv("MANIFEST_API_KEY", "")
 
 
 # ===== Provider slug → API Key 环境变量映射 =====
@@ -73,6 +74,8 @@ SLUG_TO_API_KEY_VAR = {
     "sensenova": "SENSENOVA_API_KEY",
     "nvidia": "NVIDIA_API_KEY",
     "zhipu": "ZHIPU_API_KEY",
+    "manifest": "MANIFEST_API_KEY",
+    "ds2api": "DS2API_API_KEY",
 }
 
 
