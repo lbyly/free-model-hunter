@@ -93,11 +93,20 @@ async def weekly_test_and_sync_job():
     # 1. 运行常规爬取和连通性测试 (类似 refresh_job)
     await refresh_job()
     
-    # 2. 将结果同步到 Hermes 和 Openclaw
+    # 2. 将结果同步到 Hermes 和 Openclaw（统一走 api/sync.py 的新实现，
+    #    与手动按钮 POST /api/sync/clients 完全一致，避免旧 sync_configs.py 的差异）
     logger.info("测试完成，开始同步到本地客户端配置...")
     try:
-        from sync_configs import sync_to_clients
-        sync_to_clients()
+        from api.sync import sync_to_clients
+        result = await sync_to_clients()
+        if result.get("success"):
+            logger.info(
+                f"同步到客户端完成: Hermes={result.get('hermes_updated')}, "
+                f"Hermes Desktop={result.get('hermes_desktop_updated')}, "
+                f"OpenClaw={result.get('openclaw_updated')}"
+            )
+        else:
+            logger.error(f"同步到客户端失败: {result.get('message')}")
     except Exception as e:
         logger.error(f"同步到客户端失败: {e}")
         

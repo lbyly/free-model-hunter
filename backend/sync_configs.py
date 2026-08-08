@@ -1,7 +1,20 @@
+"""
+⚠️ 已废弃 (DEPRECATED) —— 请勿再调用本模块的同步函数。
+
+同步逻辑已统一到 backend/api/sync.py 的 sync_to_clients()：
+  - 手动同步：POST /api/sync/clients
+  - 自动同步：scheduler.py 的 weekly_test_and_sync_job（已改为调用新实现）
+
+本文件保留仅作历史参考（差异点：不过滤 user_removed、无 FROZEN_BASE_URLS 兜底、
+写入 Hermes 旧 providers: 格式、会 subprocess 调用外部 rename_models.py），
+确认无引用后可安全删除。
+"""
+
 import os
 import json
 import yaml
 import shutil
+import glob
 from datetime import datetime
 from pathlib import Path
 import logging
@@ -14,14 +27,20 @@ if str(BASE_DIR) not in sys.path:
 
 from database import get_connection
 from scrapers import get_all_scrapers
-from config import get_api_key_for_slug
+from config import (
+    get_api_key_for_slug,
+    HERMES_CONFIG_PATH as _HERMES_STR,
+    OPENCLAW_CONFIG_PATH as _OPENCLAW_STR,
+    HERMES_DESKTOP_CONFIG_PATH as _HERMES_DESKTOP_STR,
+)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-HERMES_CONFIG_PATH = Path("C:/Users/Administrator/.hermes/config.yaml")
-OPENCLAW_CONFIG_PATH = Path("C:/Users/Administrator/.openclaw/openclaw.json")
-HERMES_DESKTOP_CONFIG_PATH = Path("C:/Users/Administrator/AppData/Local/hermes/config.yaml")
+# sync_configs 内部使用 Path 对象，从 config 的 str 值转换
+HERMES_CONFIG_PATH = Path(_HERMES_STR)
+OPENCLAW_CONFIG_PATH = Path(_OPENCLAW_STR)
+HERMES_DESKTOP_CONFIG_PATH = Path(_HERMES_DESKTOP_STR)
 
 SCRAPER_META = {
     "ag": ("AGNES_API_KEY", "Agnes AI"),
@@ -124,13 +143,28 @@ def sync_hermes_desktop(providers_data):
     
     logger.info("Hermes Desktop config updated successfully.")
 
-def backup_file(filepath: Path):
+def backup_file(filepath: Path, keep: int = 5):
+    """备份文件并自动轮换，只保留最近 keep 份备份（与 api/sync.py 同规则）。"""
     if not filepath.exists():
         return
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     backup_path = filepath.with_suffix(f"{filepath.suffix}.bak.{timestamp}")
     shutil.copy2(filepath, backup_path)
     logger.info(f"Backed up {filepath.name} to {backup_path.name}")
+
+    # 轮换：只保留最近 keep 份
+    parent_dir = filepath.parent
+    basename = filepath.name
+    pattern = str(parent_dir / f"{basename}.bak.*")
+    backups = glob.glob(pattern)
+    # 按修改时间降序（最新在前）
+    backups.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+    for old in backups[keep:]:
+        try:
+            os.remove(old)
+            logger.info(f"  清理旧备份: {os.path.basename(old)}")
+        except Exception as e:
+            logger.warning(f"  清理失败 {os.path.basename(old)}: {e}")
 
 def get_providers_data():
     """从数据库和爬虫配置中获取要同步的免费模型信息"""

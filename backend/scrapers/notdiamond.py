@@ -53,14 +53,25 @@ class NotDiamondScraper(BaseScraper):
             if provider:
                 tags.append(provider.lower())
 
+            # NOTE: NotDiamond API 的 context_length 并不可靠——对部分模型
+            # 它返回的是 max_tokens/output 上限（如 Meta-Llama-3.1-405B-Instruct-Turbo
+            # 返回 8192，实际上下文是 128000）。因此这里不直接信任该字段，
+            # 留空交给 context_sync 用 Hermes 缓存 / OpenRouter 做全局 model_id
+            # 兜底匹配补全真实上下文。
+            context_window = None
+            if context_length:
+                # 仅当值看起来合理（>= 16384）才作为上下文保留，否则视为 output 上限
+                if int(context_length) >= 16384:
+                    context_window = str(context_length)
+
             models.append(ScrapedModel(
                 model_id=mid,
                 name=mid,
-                description=f"Provider: {provider} | Context: {context_length} | Input: ${input_price}/M tokens | Output: ${output_price}/M tokens",
+                description=f"Provider: {provider} | Input: ${input_price}/M tokens | Output: ${output_price}/M tokens",
                 model_type="chat",
                 is_free=is_free,
                 free_quota="NotDiamond 免费路由",
-                context_window=str(context_length) if context_length else None,
+                context_window=context_window,
                 tags=tags,
             ))
         return models

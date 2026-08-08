@@ -29,6 +29,21 @@ SCRAPER_TIMEOUT = int(os.getenv("SCRAPER_TIMEOUT", "30"))
 # Playwright 无头浏览器设置
 PLAYWRIGHT_HEADLESS = os.getenv("PLAYWRIGHT_HEADLESS", "true").lower() == "true"
 
+# ===== 客户端同步路径（支持环境变量覆盖，换机器时无需改代码） =====
+HERMES_CONFIG_PATH = os.getenv(
+    "HERMES_CONFIG_PATH",
+    r"C:\Users\Administrator\.hermes\config.yaml",
+)
+OPENCLAW_CONFIG_PATH = os.getenv(
+    "OPENCLAW_CONFIG_PATH",
+    r"C:\Users\Administrator\.openclaw\openclaw.json",
+)
+HERMES_DESKTOP_CONFIG_PATH = os.getenv(
+    "HERMES_DESKTOP_CONFIG_PATH",
+    r"C:\Users\Administrator\AppData\Local\hermes\config.yaml",
+)
+
+
 # ===== API Keys（可选，用于需要认证的 Provider API） =====
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 COHERE_API_KEY = os.getenv("COHERE_API_KEY", "")

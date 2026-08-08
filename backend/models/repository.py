@@ -30,7 +30,7 @@ def get_all_providers(active_only: bool = True, include_hidden: bool = False) ->
         for row in rows:
             d = dict(row)
             # 统计模型数
-            cnt = db.execute("SELECT COUNT(*) as c FROM models WHERE provider_id = ?", (d["id"],)).fetchone()
+            cnt = db.execute("SELECT COUNT(*) as c FROM models WHERE provider_id = ? AND COALESCE(user_removed, 0) = 0", (d["id"],)).fetchone()
             d["model_count"] = cnt["c"]
             # hidden 默认 false
             d["hidden"] = bool(d.get("hidden", 0))
@@ -150,6 +150,54 @@ def delete_provider(slug: str):
         db.execute("DELETE FROM providers WHERE id = ?", (provider_id,))
 
 
+def delete_model(provider_slug: str, model_id: str) -> bool:
+    """标记指定 provider 下的单个模型为已删除（user_removed=1）。
+    爬虫 upsert 时会跳过这些模型，避免被重新拉回。
+    返回是否操作成功。"""
+    with get_db() as db:
+        provider = db.execute(
+            "SELECT id FROM providers WHERE slug = ?", (provider_slug,)
+        ).fetchone()
+        if not provider:
+            raise ValueError(f"提供商 '{provider_slug}' 不存在")
+
+        provider_id = provider["id"]
+        model_row = db.execute(
+            "SELECT id FROM models WHERE provider_id = ? AND model_id = ?",
+            (provider_id, model_id),
+        ).fetchone()
+        if not model_row:
+            return False
+
+        # 标记为已删除（不物理删除，交由爬虫跳过；保留数据便于逆向）
+        db.execute(
+            "UPDATE models SET user_removed = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+            (model_row["id"],),
+        )
+        return True
+
+
+def restore_model(provider_slug: str, model_id: str) -> bool:
+    """撤销删除标记，恢复模型可见（user_removed=0）。"""
+    with get_db() as db:
+        provider = db.execute(
+            "SELECT id FROM providers WHERE slug = ?", (provider_slug,)
+        ).fetchone()
+        if not provider:
+            raise ValueError(f"提供商 '{provider_slug}' 不存在")
+        model_row = db.execute(
+            "SELECT id FROM models WHERE provider_id = ? AND model_id = ?",
+            (provider["id"], model_id),
+        ).fetchone()
+        if not model_row:
+            return False
+        db.execute(
+            "UPDATE models SET user_removed = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+            (model_row["id"],),
+        )
+        return True
+
+
 def toggle_provider_hidden(slug: str) -> dict:
     """切换 Provider 的 hidden 状态，返回更新后的 provider"""
     with get_db() as db:
@@ -241,6 +289,8 @@ def search_models(
 
         # 排除已隐藏提供商的模型
         where_clauses.append("(p.hidden IS NULL OR p.hidden = 0)")
+        # 排除用户已删除的模型
+        where_clauses.append("(m.user_removed IS NULL OR m.user_removed = 0)")
 
         where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
 
@@ -315,7 +365,7 @@ def get_model_by_id(model_id) -> Optional[dict]:
                        p.website as provider_website, p.logo_url as provider_logo
                 FROM models m
                 JOIN providers p ON m.provider_id = p.id
-                WHERE m.id = ?
+                WHERE m.id = ? AND (m.user_removed IS NULL OR m.user_removed = 0)
                 """,
                 (db_id,)
             ).fetchone()
@@ -331,6 +381,7 @@ def get_model_by_id(model_id) -> Optional[dict]:
                 FROM models m
                 JOIN providers p ON m.provider_id = p.id
                 WHERE m.model_id = ?
+                  AND (m.user_removed IS NULL OR m.user_removed = 0)
                 ORDER BY p.hidden ASC, m.id DESC
                 LIMIT 1
                 """,
@@ -371,6 +422,7 @@ def get_model_by_provider_and_model_id(provider_slug: str, model_id: str) -> Opt
             FROM models m
             JOIN providers p ON m.provider_id = p.id
             WHERE p.slug = ? AND m.model_id = ?
+              AND (m.user_removed IS NULL OR m.user_removed = 0)
             """,
             (provider_slug, model_id)
         ).fetchone()
@@ -401,13 +453,22 @@ def get_model_by_provider_and_model_id(provider_slug: str, model_id: str) -> Opt
 
 # ===== 爬虫数据写入 =====
 
-def upsert_models(provider_id: int, models: list) -> int:
+def upsert_models(provider_id: int, models: list, prune_missing: bool = False) -> int:
     """
     UPSERT 写入模型数据
     返回本次写入/更新的数量
+
+    prune_missing=True 时才会删除该 provider 下本次未返回的模型（仅手动全量刷新使用）。
+    默认安全模式：
+      - 爬虫返回空/失败时不删除任何已有模型（防止瞬时故障导致数据丢失）
+      - 不覆盖已存在的 context_window / max_tokens 空值
     """
     # 仅保留免费的模型（is_free 为 True 的模型），舍弃任何收费模型
     models = [m for m in models if m.get("is_free")]
+
+    # 安全保护：没有模型返回时直接跳过，绝不删除已有数据
+    if not models:
+        return 0
 
     count = 0
     # 获取 provider slug
@@ -417,9 +478,16 @@ def upsert_models(provider_id: int, models: list) -> int:
         provider_name = provider_row["name"] if provider_row else ""
 
     with get_db() as db:
-        # 获取本次爬取的 model_id 集合，删除该 provider 下不再存在的模型
+        # 收集用户已删除（user_removed=1）的 model_id，插入时跳过，避免被重新拉回
+        removed_rows = db.execute(
+            "SELECT model_id FROM models WHERE provider_id = ? AND user_removed = 1",
+            (provider_id,),
+        ).fetchall()
+        user_removed_ids = {r["model_id"] for r in removed_rows}
+
         current_ids = tuple(m["model_id"] for m in models)
-        if current_ids:
+        if prune_missing and current_ids:
+            # 仅手动全量刷新时清理该 provider 下已不存在的模型
             placeholders = ",".join("?" for _ in current_ids)
             # 先删除这些 model 的 rate_limits（避免外键约束）
             stale_models = db.execute(
@@ -428,17 +496,16 @@ def upsert_models(provider_id: int, models: list) -> int:
             ).fetchall()
             for sm in stale_models:
                 db.execute("DELETE FROM model_rate_limits WHERE model_id = ?", (sm["id"],))
-            # 删除该 provider 下已不存在的模型
+            # 删除该 provider 下已不存在的模型（保留 user_removed=1 的）
             db.execute(
-                f"DELETE FROM models WHERE provider_id = ? AND model_id NOT IN ({placeholders})",
+                f"DELETE FROM models WHERE provider_id = ? AND model_id NOT IN ({placeholders}) AND COALESCE(user_removed,0) = 0",
                 (provider_id, *current_ids)
             )
-        else:
-            # 如果没有模型返回，清空该 provider 的所有模型
-            db.execute("DELETE FROM model_rate_limits WHERE model_id IN (SELECT id FROM models WHERE provider_id = ?)", (provider_id,))
-            db.execute("DELETE FROM models WHERE provider_id = ?", (provider_id,))
 
         for m in models:
+            # 已删除的模型：跳过，不重新拉回
+            if m["model_id"] in user_removed_ids:
+                continue
             # 自动分类
             classification = classify_model(
                 name=m.get("name", ""),
@@ -465,10 +532,11 @@ def upsert_models(provider_id: int, models: list) -> int:
                     is_free=excluded.is_free,
                     free_quota=excluded.free_quota,
                     pricing_url=excluded.pricing_url,
-                    context_window=excluded.context_window,
-                    tags=excluded.tags,
-                    status=excluded.status,
-                    updated_at=CURRENT_TIMESTAMP
+                                        context_window=CASE WHEN excluded.context_window IS NULL OR TRIM(excluded.context_window) = '' THEN models.context_window ELSE excluded.context_window END,
+                                        max_tokens=CASE WHEN excluded.max_tokens IS NULL THEN models.max_tokens ELSE excluded.max_tokens END,
+                                        tags=excluded.tags,
+                                        status=excluded.status,
+                                        updated_at=CURRENT_TIMESTAMP
                 """,
                 (
                     provider_id,
@@ -792,10 +860,11 @@ def import_data_json(export_data: dict) -> dict:
                     is_free=excluded.is_free,
                     free_quota=excluded.free_quota,
                     pricing_url=excluded.pricing_url,
-                    context_window=excluded.context_window,
-                    tags=excluded.tags,
-                    status=excluded.status,
-                    updated_at=CURRENT_TIMESTAMP
+                                        context_window=CASE WHEN excluded.context_window IS NULL OR TRIM(excluded.context_window) = '' THEN models.context_window ELSE excluded.context_window END,
+                                        max_tokens=CASE WHEN excluded.max_tokens IS NULL THEN models.max_tokens ELSE excluded.max_tokens END,
+                                        tags=excluded.tags,
+                                        status=excluded.status,
+                                        updated_at=CURRENT_TIMESTAMP
                 """,
                 (
                     provider_id,

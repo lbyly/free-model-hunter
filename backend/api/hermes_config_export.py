@@ -29,6 +29,29 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/hermes", tags=["hermes"])
 
+# 冻结 provider（freeze.py 注册的 *FreezeScraper 不携带 chat_endpoint_base）的 base_url 兜底。
+# 数据来源：Page Assist providers 备份
+#   D:\\syncthing backup\\重要备份\\page-assist-providers-2026-08-05.json
+# 这些 provider 的 endpoint 不再由爬虫声明（冻结后不联网），但同步到
+# Hermes/OpenClaw 客户端时仍需要真实 base_url。
+FROZEN_BASE_URLS = {
+    "agnes": "https://api.agnes-ai.cn/v1",
+    "agnes_com": "https://apihub.agnes-ai.com/v1",
+    "blazeai": "https://api.blazeapi.org/paid/v1",
+    "chat2api": "http://127.0.0.1:8081/v1",
+    "cpamc": "http://127.0.0.1:8317/v1",
+    "cerebras": "https://api.cerebras.ai/v1",
+    "manifest_1111": "https://app.manifest.build/v1",
+    "modelscope": "https://api-inference.modelscope.cn/v1",
+    "nararouter": "https://router.bynara.id/v1",
+    "omniroute": "http://127.0.0.1:20128/v1",
+    "opencode": "https://opencode.ai/zen/v1",
+    "step": "https://api.stepfun.com/v1",
+    "webai2api": "http://127.0.0.1:3005/v1",
+    "kilo": "https://api.kilo.ai/api/gateway",
+    "scnet": "https://api.scnet.cn/api/llm/v1",
+}
+
 
 def _now_utc() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -91,9 +114,9 @@ async def hermes_providers_config(
         for prow in provider_rows:
             slug = prow["slug"]
 
-            # 跳过没有 endpoint 配置的 provider
+            # 跳过没有 endpoint 配置的 provider（冻结 provider 用 FROZEN_BASE_URLS 兜底）
             ep_info = scraper_endpoints.get(slug, {})
-            base_url = ep_info.get("base_url", "")
+            base_url = ep_info.get("base_url", "") or FROZEN_BASE_URLS.get(slug, "")
             if not base_url:
                 continue
 
@@ -107,11 +130,12 @@ async def hermes_providers_config(
             if not api_key:
                 api_key = get_api_key_for_slug(slug)
 
-            # 读取该 provider 的所有模型
+            # 读取该 provider 的所有可见模型（user_removed=0，与 freeze/统计口径一致）
             cursor.execute("""
                 SELECT model_id, name, context_window, is_free
                 FROM models
                 WHERE provider_id = ?
+                  AND COALESCE(user_removed, 0) = 0
                 ORDER BY is_free DESC, name
             """, (prow["id"],))
             model_rows = cursor.fetchall()

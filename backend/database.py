@@ -69,6 +69,14 @@ def migrate_schema():
             cursor.execute("ALTER TABLE models ADD COLUMN use_case VARCHAR(30) DEFAULT 'chat'")
             print("  [迁移] 添加 use_case 列")
 
+        if "max_tokens" not in m_columns:
+            cursor.execute("ALTER TABLE models ADD COLUMN max_tokens INTEGER DEFAULT NULL")
+            print("  [迁移] 添加 max_tokens 列")
+
+        if "user_removed" not in m_columns:
+            cursor.execute("ALTER TABLE models ADD COLUMN user_removed INTEGER DEFAULT 0")
+            print("  [迁移] 添加 user_removed 列")
+
         # 新索引需要在列存在后才能创建
         try:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_models_capability_tier ON models(capability_tier)")

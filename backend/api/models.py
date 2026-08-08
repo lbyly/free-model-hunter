@@ -52,6 +52,19 @@ async def get_model_by_provider_and_slug(provider_slug: str, model_id: str):
     return model
 
 
+@router.delete("/models/{provider_slug}/{model_id:path}")
+async def delete_model_by_provider_and_slug(provider_slug: str, model_id: str):
+    """删除指定 provider 下的单个模型"""
+    from models.repository import delete_model
+    try:
+        deleted = delete_model(provider_slug, model_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Model not found")
+    return {"success": True, "message": f"模型 '{model_id}' 已删除"}
+
+
 @router.get("/models/{model_id:path}")
 async def get_model(model_id: str):
     """获取单个模型详情（支持数字 ID 或 model_id 字符串）"""
@@ -68,9 +81,9 @@ async def get_classify_stats():
     """获取分类统计数据（各 tier / use_case 的模型数量）"""
     from database import get_db
     with get_db() as db:
-        # 排除隐藏提供商的模型
+        # 排除隐藏提供商的模型和用户已删除的模型
         total_row = db.execute(
-            "SELECT COUNT(*) as c FROM models m JOIN providers p ON m.provider_id = p.id WHERE (p.hidden IS NULL OR p.hidden = 0)"
+            "SELECT COUNT(*) as c FROM models m JOIN providers p ON m.provider_id = p.id WHERE (p.hidden IS NULL OR p.hidden = 0) AND (m.user_removed IS NULL OR m.user_removed = 0)"
         ).fetchone()
         total = total_row["c"]
 
@@ -78,6 +91,7 @@ async def get_classify_stats():
             """SELECT m.capability_tier, COUNT(*) as c FROM models m
                JOIN providers p ON m.provider_id = p.id
                WHERE m.capability_tier IS NOT NULL AND (p.hidden IS NULL OR p.hidden = 0)
+                 AND (m.user_removed IS NULL OR m.user_removed = 0)
                GROUP BY m.capability_tier ORDER BY m.capability_tier"""
         ).fetchall()
         tiers = []
@@ -90,6 +104,7 @@ async def get_classify_stats():
             """SELECT m.use_case, COUNT(*) as c FROM models m
                JOIN providers p ON m.provider_id = p.id
                WHERE (p.hidden IS NULL OR p.hidden = 0)
+                 AND (m.user_removed IS NULL OR m.user_removed = 0)
                GROUP BY m.use_case ORDER BY COUNT(*) DESC"""
         ).fetchall()
         uc_labels = {
@@ -101,7 +116,25 @@ async def get_classify_stats():
         for r in uc_rows:
             use_cases.append({"use_case": r["use_case"], "label": uc_labels.get(r["use_case"], r["use_case"]), "count": r["c"]})
 
-        return {"total": total, "tiers": tiers, "use_cases": use_cases}
+        # 按 tier 分组的提供商模型计数（供前端层级下拉菜单使用）
+        tier_prov_rows = db.execute(
+            """SELECT m.capability_tier, p.slug, p.name, COUNT(*) as c
+               FROM models m
+               JOIN providers p ON m.provider_id = p.id
+               WHERE m.capability_tier IS NOT NULL
+                 AND (p.hidden IS NULL OR p.hidden = 0)
+                 AND (m.user_removed IS NULL OR m.user_removed = 0)
+               GROUP BY m.capability_tier, p.slug
+               ORDER BY m.capability_tier, c DESC"""
+        ).fetchall()
+        tier_providers = {}
+        for r in tier_prov_rows:
+            t = str(r["capability_tier"])
+            tier_providers.setdefault(t, []).append(
+                {"slug": r["slug"], "name": r["name"], "count": r["c"]}
+            )
+
+        return {"total": total, "tiers": tiers, "use_cases": use_cases, "tier_providers": tier_providers}
 
 
 @router.post("/classify/run")

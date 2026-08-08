@@ -109,6 +109,7 @@ from api.admin import router as admin_router
 from api.hermes_catalog import router as hermes_router
 from api.hermes_config_export import router as hermes_config_router
 from api.sync import router as sync_router
+from api.context import router as context_router
 
 app.include_router(providers_router)
 app.include_router(models_router)
@@ -116,6 +117,7 @@ app.include_router(admin_router)
 app.include_router(hermes_router)
 app.include_router(hermes_config_router)
 app.include_router(sync_router)
+app.include_router(context_router)
 
 
 # 前端页面
@@ -130,4 +132,6 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    # reload=False（单进程稳定）：reload 模式下新旧 worker 并存会
+    # 反复打到旧字节码，导致"改了爬虫却不生效"。改代码后需手动重启。
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)
