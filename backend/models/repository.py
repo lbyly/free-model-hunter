@@ -928,7 +928,7 @@ PA_PROVIDER_MAP = {
     "Agnes.com": "agnes_com",
     "Manifest": "manifest",
     "Groq": "groq",
-    "Opencode Zen": "opencode",
+    "Opencode Zen": ["opencode", "zen"],
     "Webai2api": "webai2api",
     "Openrouter": "openrouter",
     "Cohere": "cohere",
@@ -965,11 +965,15 @@ def apply_pa_removed(pa_models_by_provider: dict) -> dict:
         s = re.sub(r"-+", "-", s)
         return s.strip("-")
 
-    # FMH slug -> PA 归一化 ID 集合
+    # FMH slug -> PA 归一化 ID 集合（一个 PA 提供商可对应多个 FMH provider）
     pa_ids_by_slug = {}
     for pa_name, ids in pa_models_by_provider.items():
-        slug = PA_PROVIDER_MAP.get(pa_name)
-        if slug:
+        slugs = PA_PROVIDER_MAP.get(pa_name)
+        if not slugs:
+            continue
+        if isinstance(slugs, str):
+            slugs = [slugs]
+        for slug in slugs:
             pa_ids_by_slug.setdefault(slug, set()).update(norm(x) for x in ids)
 
     # 备份
@@ -1006,10 +1010,15 @@ def apply_pa_removed(pa_models_by_provider: dict) -> dict:
         for r in db.execute("SELECT id, slug FROM providers"):
             slug_ids[r["slug"]] = r["id"]
         for pa_name, raw_ids in pa_models_by_provider.items():
-            slug = PA_PROVIDER_MAP.get(pa_name)
-            if not slug or slug not in slug_ids:
+            slugs = PA_PROVIDER_MAP.get(pa_name)
+            if not slugs:
                 continue
-            pid = slug_ids[slug]
+            if isinstance(slugs, str):
+                slugs = [slugs]
+            for slug in slugs:
+                if slug not in slug_ids:
+                    continue
+                pid = slug_ids[slug]
             # 一次性构建该 provider 的 norm -> (id, model_id) 映射（用于改名对齐）
             provider_rows = db.execute(
                 "SELECT id, model_id FROM models WHERE provider_id = ?", (pid,)
@@ -1017,48 +1026,48 @@ def apply_pa_removed(pa_models_by_provider: dict) -> dict:
             norm_to_row = {}
             for pr in provider_rows:
                 norm_to_row.setdefault(norm(pr["model_id"]), pr)
-            for mid in raw_ids:
-                if not mid or not mid.strip():
-                    continue
-                mid = mid.strip()
-                exists = db.execute(
-                    "SELECT id FROM models WHERE provider_id = ? AND model_id = ?",
-                    (pid, mid),
-                ).fetchone()
-                if exists:
-                    continue
-                # 归一化匹配：库中有近似 ID（如 ~xxx）-> 直接改名对齐，避免重复
-                similar = norm_to_row.get(norm(mid))
-                if similar:
-                    db.execute(
-                        "UPDATE models SET model_id = ?, name = ?, user_removed = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                        (mid, mid, similar["id"]),
-                    )
+                for mid in raw_ids:
+                    if not mid or not mid.strip():
+                        continue
+                    mid = mid.strip()
+                    exists = db.execute(
+                        "SELECT id FROM models WHERE provider_id = ? AND model_id = ?",
+                        (pid, mid),
+                    ).fetchone()
+                    if exists:
+                        continue
+                    # 归一化匹配：库中有近似 ID（如 ~xxx）-> 直接改名对齐，避免重复
+                    similar = norm_to_row.get(norm(mid))
+                    if similar:
+                        db.execute(
+                            "UPDATE models SET model_id = ?, name = ?, user_removed = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                            (mid, mid, similar["id"]),
+                        )
+                        stats["added"] += 1
+                        continue
+                    src = db.execute(
+                        "SELECT * FROM models WHERE model_id = ? LIMIT 1", (mid,)
+                    ).fetchone()
+                    if src:
+                        db.execute(
+                            """INSERT INTO models (provider_id, model_id, name, description, type,
+                                capability_tier, use_case, is_free, free_quota, pricing_url,
+                                context_window, tags, status, max_tokens, user_removed)
+                               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,0)""",
+                            (pid, mid, src["name"], src["description"], src["type"],
+                             src["capability_tier"], src["use_case"], src["is_free"],
+                             src["free_quota"], src["pricing_url"], src["context_window"],
+                             src["tags"], src["status"], src["max_tokens"]),
+                        )
+                    else:
+                        name = mid.split("/")[-1]
+                        db.execute(
+                            """INSERT INTO models (provider_id, model_id, name, description, type,
+                                is_free, status, user_removed)
+                               VALUES (?,?,?,?,?,0,'active',0)""",
+                            (pid, mid, name, f"{pa_name} model", "chat"),
+                        )
                     stats["added"] += 1
-                    continue
-                src = db.execute(
-                    "SELECT * FROM models WHERE model_id = ? LIMIT 1", (mid,)
-                ).fetchone()
-                if src:
-                    db.execute(
-                        """INSERT INTO models (provider_id, model_id, name, description, type,
-                            capability_tier, use_case, is_free, free_quota, pricing_url,
-                            context_window, tags, status, max_tokens, user_removed)
-                           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,0)""",
-                        (pid, mid, src["name"], src["description"], src["type"],
-                         src["capability_tier"], src["use_case"], src["is_free"],
-                         src["free_quota"], src["pricing_url"], src["context_window"],
-                         src["tags"], src["status"], src["max_tokens"]),
-                    )
-                else:
-                    name = mid.split("/")[-1]
-                    db.execute(
-                        """INSERT INTO models (provider_id, model_id, name, description, type,
-                            is_free, status, user_removed)
-                           VALUES (?,?,?,?,?,0,'active',0)""",
-                        (pid, mid, name, f"{pa_name} model", "chat"),
-                    )
-                stats["added"] += 1
 
         stats["visible"] = db.execute(
             "SELECT COUNT(*) c FROM models WHERE COALESCE(user_removed, 0) = 0"
