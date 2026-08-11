@@ -916,3 +916,48 @@ def backup_local_database() -> str:
     
     shutil.copy2(db_file, backup_file)
     return backup_file.name
+
+def apply_pa_removed(pa_model_ids: set) -> dict:
+    """以 Page Assist 模型清单为基准重算全库 user_removed：
+    PA 清单中有的模型 -> 0（可见），没有的 -> 1（隐藏）。
+    自动备份数据库后执行，返回统计。
+    """
+    import re
+    import shutil
+    from datetime import datetime
+    from config import DATABASE_PATH
+
+    def norm(s):
+        s = (s or "").lower().strip()
+        s = re.sub(r"[^a-z0-9.\-]", "-", s)
+        s = re.sub(r"-+", "-", s)
+        return s.strip("-")
+
+    pa_ids = {norm(x) for x in pa_model_ids}
+
+    # 备份
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    bak = f"{DATABASE_PATH}.bak-{ts}"
+    shutil.copy2(DATABASE_PATH, bak)
+
+    stats = {"total": 0, "to_show": 0, "to_hide": 0, "visible": 0, "hidden": 0}
+    with get_db() as db:
+        rows = db.execute("SELECT id, model_id, user_removed FROM models").fetchall()
+        stats["total"] = len(rows)
+        for r in rows:
+            new_val = 0 if norm(r["model_id"]) in pa_ids else 1
+            old_val = r["user_removed"] or 0
+            if new_val == 0 and old_val != 0:
+                stats["to_show"] += 1
+            elif new_val == 1 and old_val != 1:
+                stats["to_hide"] += 1
+            db.execute(
+                "UPDATE models SET user_removed = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                (new_val, r["id"]),
+            )
+        stats["visible"] = db.execute(
+            "SELECT COUNT(*) c FROM models WHERE COALESCE(user_removed, 0) = 0"
+        ).fetchone()["c"]
+        stats["hidden"] = stats["total"] - stats["visible"]
+
+    return {"stats": stats, "backup": os.path.basename(bak)}

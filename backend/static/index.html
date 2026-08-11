@@ -202,14 +202,48 @@
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: 10px;
-        min-width: 180px;
-        max-height: 280px;
+        min-width: 260px;
+        max-height: 560px;
         overflow-y: auto;
         z-index: 120;
         box-shadow: 0 6px 24px rgba(0,0,0,0.45);
         padding: 4px 0;
       }
       .tier-provider-menu.show { display: block; }
+      /* 细滚动条：半透明圆角，hover 加深（下拉菜单 / 弹窗 / 状态框） */
+      .tier-provider-menu,
+      .modal-body,
+      .test-status-msg {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(140, 140, 175, 0.45) transparent;
+      }
+      .tier-provider-menu::-webkit-scrollbar,
+      .modal-body::-webkit-scrollbar,
+      .test-status-msg::-webkit-scrollbar {
+        width: 6px;
+      }
+      .tier-provider-menu::-webkit-scrollbar-track,
+      .modal-body::-webkit-scrollbar-track,
+      .test-status-msg::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .tier-provider-menu::-webkit-scrollbar-thumb,
+      .modal-body::-webkit-scrollbar-thumb,
+      .test-status-msg::-webkit-scrollbar-thumb {
+        background: rgba(140, 140, 175, 0.45);
+        border-radius: 3px;
+      }
+      .tier-provider-menu::-webkit-scrollbar-thumb:hover,
+      .modal-body::-webkit-scrollbar-thumb:hover,
+      .test-status-msg::-webkit-scrollbar-thumb:hover {
+        background: rgba(140, 140, 175, 0.75);
+      }
+      .tier-provider-menu.up {
+        top: auto;
+        bottom: 100%;
+        margin-top: 0;
+        margin-bottom: 4px;
+      }
       .tier-provider-menu .tp-item {
         display: flex;
         align-items: center;
@@ -1690,7 +1724,70 @@
 
               <div class="form-group" style="margin-bottom: 16px">
                 <label style="font-weight: 600; font-size: 14px"
-                  >📥 导入配置恢复</label
+                  >📥 <div class="form-group" style="margin-bottom: 16px">
+                <label style="font-weight: 600; font-size: 14px"
+                  >PA 模型清单导入</label
+                >
+                <span class="form-hint" style="margin-bottom: 10px"
+                  >选择 Page Assist 导出的模型清单（MD 文件），重新计算全部模型的
+                  user_removed：清单中有的模型设为可见，没有的设为隐藏。不选文件时自动读取
+                  D:/syncthing backup/重要备份 下最新的 page-assist-all-models-*.md。操作前会自动备份数据库。</span
+                >
+                <div
+                  style="
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    margin-top: 6px;
+                    flex-wrap: wrap;
+                  "
+                >
+                  <input
+                    type="file"
+                    id="paImportFile"
+                    accept=".md,.txt,.json"
+                    style="display: none"
+                  />
+                  <button
+                    type="button"
+                    class="reset-btn"
+                    id="paChooseFileBtn"
+                    style="padding: 8px 16px"
+                  >
+                    选择 MD 文件...
+                  </button>
+                  <span
+                    id="paFileName"
+                    style="font-size: 12px; color: var(--text2)"
+                    >未选择文件（将自动读取最新导出）</span
+                  >
+                  <button
+                    type="button"
+                    class="submit-btn save"
+                    id="paImportBtn"
+                    style="padding: 8px 16px; border: none"
+                  >
+                    导入并重算 user_removed
+                  </button>
+                </div>
+                <div
+                  id="paImportStatus"
+                  class="test-status-msg"
+                  style="margin-top: 10px; display: none"
+                ></div>
+              </div>
+
+              <hr
+                style="
+                  border: none;
+                  border-top: 1px solid var(--border);
+                  margin: 16px 0;
+                "
+              />
+
+              <div class="form-group" style="margin-bottom: 16px">
+                <label style="font-weight: 600; font-size: 14px"
+                  ></label
                 >
                 <span class="form-hint" style="margin-bottom: 10px"
                   >选择之前导出的 JSON
@@ -2186,8 +2283,16 @@
         }
         // 打开新的
         renderTierMenu(tier); // 刷新 active 状态
+        menu.classList.remove("up");
         menu.classList.add("show");
         openTierMenu = tier;
+        // 超出视口底部时自动向上展开
+        requestAnimationFrame(() => {
+          const rect = menu.getBoundingClientRect();
+          if (rect.bottom > window.innerHeight - 8) {
+            menu.classList.add("up");
+          }
+        });
       }
 
       function selectProviderFromTier(slug, tier) {
@@ -3074,6 +3179,75 @@
             await loadStats();
           } catch (err) {
             alert("导入备份失败: " + err.message);
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      const paImportFile = document.getElementById("paImportFile");
+      const paChooseFileBtn = document.getElementById("paChooseFileBtn");
+      const paFileName = document.getElementById("paFileName");
+      const paImportBtn = document.getElementById("paImportBtn");
+      const paImportStatus = document.getElementById("paImportStatus");
+
+      paChooseFileBtn.addEventListener("click", () => {
+        paImportFile.click();
+      });
+
+      paImportFile.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          paFileName.textContent = file.name;
+        } else {
+          paFileName.textContent = "未选择文件（将自动读取最新导出）";
+        }
+      });
+
+      paImportBtn.addEventListener("click", async () => {
+        const file = paImportFile.files[0];
+        const confirmMsg = file
+          ? "导入后将按所选文件重算全部模型的 user_removed（清单有的=可见，没有的=隐藏）。继续？"
+          : "未选择文件，将自动读取 D:/syncthing backup/重要备份 下最新的 page-assist-all-models-*.md 并重算 user_removed。继续？";
+        if (!confirm(confirmMsg)) {
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const content = e.target.result;
+            paImportBtn.disabled = true;
+            paImportBtn.textContent = "正在处理...";
+            paImportStatus.style.display = "none";
+
+            const res = await fetch(`${apiBase}/import-pa-models`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(file ? { content } : {}),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "未知错误");
+
+            const s = data.stats;
+            const srcLabel = data.source ? `（来源：${data.source}）` : "";
+            paImportStatus.className = "test-status-msg success";
+            paImportStatus.textContent =
+              `更新完成！识别到 ${data.pa_count} 个 PA 模型，` +
+              `共 ${s.total} 个模型：可见 ${s.visible} 个（恢复 ${s.to_show} 个），` +
+              `隐藏 ${s.hidden} 个（新增隐藏 ${s.to_hide} 个）。备份：${data.backup} ${srcLabel}`;
+            paImportStatus.style.display = "block";
+
+            paImportFile.value = "";
+            paFileName.textContent = "未选择文件（将自动读取最新导出）";
+            await loadProviders();
+            await loadModels();
+            await loadStats();
+          } catch (err) {
+            paImportStatus.className = "test-status-msg error";
+            paImportStatus.textContent = "导入失败: " + err.message;
+            paImportStatus.style.display = "block";
+          } finally {
+            paImportBtn.textContent = "导入并重算 user_removed";
           }
         };
         reader.readAsText(file);

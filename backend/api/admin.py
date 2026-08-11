@@ -148,3 +148,45 @@ async def local_backup():
         return {"success": True, "filename": filename}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"本地备份失败: {str(e)}")
+
+@router.post("/import-pa-models")
+async def import_pa_models(data: dict):
+    """导入 Page Assist 导出的模型清单，重算全库 user_removed：
+    PA 清单中有的模型 -> 可见(0)，没有的 -> 隐藏(1)。
+    请求体: {"content": "<md文本>"} 或 {"model_ids": [...]}；
+    都不传时自动读取 D:/syncthing backup/重要备份 下最新的 page-assist-all-models-*.md。
+    """
+    import re
+    import glob
+    import os
+    from models.repository import apply_pa_removed
+
+    content = data.get("content") or ""
+    model_ids = data.get("model_ids") or []
+    source = "upload"
+
+    if not content and not model_ids:
+        base = r"D:\syncthing backup\重要备份"
+        files = glob.glob(os.path.join(base, "page-assist-all-models-*.md"))
+        if not files:
+            raise HTTPException(
+                status_code=400,
+                detail=f"未提供文件内容，且目录 {base} 下未找到 page-assist-all-models-*.md",
+            )
+        latest = max(files, key=os.path.getmtime)
+        content = open(latest, "r", encoding="utf-8").read()
+        source = f"auto:{os.path.basename(latest)}"
+
+    if not model_ids:
+        # 从 MD 文本中提取所有「原始模型ID」
+        model_ids = re.findall(r"\*\*原始模型ID\*\*:\s*`([^`]+)`", content)
+    if not model_ids:
+        raise HTTPException(status_code=400, detail="未能从文件中解析到任何模型 ID，请确认是 Page Assist 导出的 MD 清单")
+
+    try:
+        result = apply_pa_removed(set(model_ids))
+        return {"success": True, "pa_count": len(set(model_ids)), "source": source, **result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"更新失败: {str(e)}")
