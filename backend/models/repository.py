@@ -25,7 +25,7 @@ def get_all_providers(active_only: bool = True, include_hidden: bool = False) ->
         if not include_hidden:
             where.append("(hidden IS NULL OR hidden = 0)")
         where_sql = " AND ".join(where) if where else "1=1"
-        rows = db.execute(f"SELECT * FROM providers WHERE {where_sql} ORDER BY name").fetchall()
+        rows = db.execute(f"SELECT * FROM providers WHERE {where_sql} ORDER BY COALESCE(hidden, 0), name").fetchall()
         results = []
         for row in rows:
             d = dict(row)
