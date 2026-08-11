@@ -127,7 +127,15 @@ async def root():
     import os
     index_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
     with open(index_path, encoding="utf-8") as f:
-        return f.read()
+        content = f.read()
+    return HTMLResponse(
+        content=content,
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
+    )
 
 
 if __name__ == "__main__":

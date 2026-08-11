@@ -1998,6 +1998,16 @@
         }
       }
 
+      function escapeAttr(str) {
+        if (!str) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
       function renderModels(models) {
         if (!models.length) {
           grid.innerHTML = `<div class="empty"><div class="icon">🔍</div>没有找到匹配的模型</div>`;
@@ -2012,9 +2022,9 @@
             .map((m) => {
               const tier = m.capability_tier || 2;
               return `
-        <div class="model-card compact-card tier${tier}" onclick="showModelDetail('${m.provider.slug}', '${m.model_id}')">
-          <div class="model-name-compact" title="${m.model_id}">${m.model_id}</div>
-          <span class="meta-tag provider">🏢 ${m.provider.name}</span>
+        <div class="model-card compact-card tier${tier}" data-provider="${escapeAttr(m.provider.slug)}" data-model="${escapeAttr(m.model_id)}">
+          <div class="model-name-compact" title="${escapeAttr(m.model_id)}">${escapeAttr(m.model_id)}</div>
+          <span class="meta-tag provider">🏢 ${escapeAttr(m.provider.name)}</span>
         </div>
       `;
             })
@@ -2041,25 +2051,25 @@
               ? `<span>⚡ ${m.max_tokens}</span>`
               : "";
             const quotaHtml = m.free_quota
-              ? `<span>${m.free_quota}</span>`
+              ? `<span>${escapeAttr(m.free_quota)}</span>`
               : "";
             const desc =
               m.description && m.description !== "提供方: "
-                ? m.description
+                ? escapeAttr(m.description)
                 : "";
 
             return `
-      <div class="model-card tier${tier}" onclick="showModelDetail('${m.provider.slug}', '${m.model_id}')">
+      <div class="model-card tier${tier}" data-provider="${escapeAttr(m.provider.slug)}" data-model="${escapeAttr(m.model_id)}">
         <div class="card-header">
-          <div class="model-name">${m.name}</div>
+          <div class="model-name">${escapeAttr(m.name)}</div>
           <span class="tier-badge t${tier}" title="${ti.label}：${ti.desc}">${ti.stars || "★★"}</span>
         </div>
         <div class="card-body">
           <div class="card-desc">${desc || "免费模型，可通过 API 直接调用"}</div>
           <div class="card-meta">
             ${freeBadge}
-            <span class="meta-tag provider">🏢 ${m.provider.name}</span>
-            <span class="meta-tag use-case"><i>${USE_CASE_EMOJIS[m.use_case] || ""}</i> ${ucLabel}</span>
+            <span class="meta-tag provider">🏢 ${escapeAttr(m.provider.name)}</span>
+            <span class="meta-tag use-case"><i>${USE_CASE_EMOJIS[m.use_case] || ""}</i> ${escapeAttr(ucLabel)}</span>
           </div>
         </div>
         <div class="card-footer">
@@ -2071,6 +2081,17 @@
           })
           .join("");
       }
+
+      // 卡片统一事件委托（点击容器内的任一卡片及其子元素即打开模型详情）
+      grid.addEventListener("click", (e) => {
+        const card = e.target.closest(".model-card");
+        if (!card) return;
+        const provider = card.getAttribute("data-provider");
+        const model = card.getAttribute("data-model");
+        if (provider && model) {
+          showModelDetail(provider, model);
+        }
+      });
 
       function renderPagination(total) {
         const totalPages = Math.ceil(total / state.pageSize);
@@ -2856,6 +2877,7 @@
       }
 
       async function showModelDetail(providerSlug, modelId) {
+        document.getElementById("modelDetailTitle").textContent = "🤖 模型详情";
         detailBody.innerHTML =
           '<div class="loading" style="padding:20px"><div class="spinner"></div><div>加载中...</div></div>';
         detailModal.classList.add("open");
@@ -2873,6 +2895,7 @@
       }
 
       function renderModelDetail(m) {
+        document.getElementById("modelDetailTitle").textContent = `🤖 ${m.name || m.model_id}`;
         const apiBaseUrl = getProviderApiBase(m.provider.slug);
         const isGemini = m.provider.slug === "gemini";
 
@@ -3023,11 +3046,19 @@
       <div class="detail-row" style="border-bottom: none; justify-content: flex-end; padding-top: 8px;">
         <button
           class="delete-model-btn"
-          onclick="deleteModel('${m.provider.slug}', '${m.model_id}')"
+          id="deleteModelBtn"
         >🗑️ 删除此模型</button>
       </div>
     </div>
   `;
+
+        // 绑定删除按钮事件
+        const delBtn = document.getElementById('deleteModelBtn');
+        if (delBtn) {
+          delBtn.addEventListener('click', () => {
+            deleteModel(m.provider.slug, m.model_id);
+          });
+        }
       }
 
       // 删除模型

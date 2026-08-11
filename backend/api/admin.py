@@ -190,12 +190,20 @@ async def import_pa_models(data: dict):
             if m2 and current:
                 model_ids_by_provider[current].append(m2.group(1).strip())
 
+    # 提取各提供商 Base URL（自动创建新 provider 时填充 scrape_url）
+    # 表格行格式: | 提供商名 | `https://...` | `key` | `type` |
+    provider_info = {}
+    for line in content.splitlines():
+        m3 = re.match(r"^\|\s*([^|]+?)\s*\|\s*`([^`]+)`\s*\|", line)
+        if m3:
+            provider_info[m3.group(1).strip()] = {"base_url": m3.group(2).strip()}
+
     total_ids = sum(len(v) for v in model_ids_by_provider.values())
     if not total_ids:
         raise HTTPException(status_code=400, detail="未能从文件中解析到任何模型 ID，请确认是 Page Assist 导出的 MD 清单")
 
     try:
-        result = apply_pa_removed(model_ids_by_provider)
+        result = apply_pa_removed(model_ids_by_provider, provider_info)
         return {"success": True, "pa_count": total_ids, "source": source, **result}
     except HTTPException:
         raise

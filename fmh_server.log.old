@@ -1,0 +1,457 @@
+INFO:     Started server process [19524]
+INFO:     Waiting for application startup.
+2026-08-06 21:51:08 [INFO] 🚀 Free Models Hub 后端启动中...
+2026-08-06 21:51:08 [INFO] 📦 初始化数据库...
+2026-08-06 21:51:08 [INFO] 🔄 数据库 Schema 迁移...
+2026-08-06 21:51:08 [INFO] 🔍 自动发现爬虫...
+2026-08-06 21:51:08 [INFO] 🏷️ 对现有模型进行分类...
+2026-08-06 21:51:08 [INFO]   分类完成: 共 5709 个模型 | 能力分级: T1=1763, T2=3473, T3=473 | 用途: chat=4770, vision=255, embedding=21, code=248, reasoning=247, image=133, audio=31, reranker=4
+2026-08-06 21:51:08 [INFO] ⏰ 启动定时调度器...
+2026-08-06 21:51:08 [INFO] Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-06 21:51:08 [INFO]   已添加定时任务: 每天 2:00 (北京时间)
+2026-08-06 21:51:08 [INFO] Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-06 21:51:08 [INFO]   已添加定时任务: 每天 14:00 (北京时间)
+2026-08-06 21:51:08 [INFO] Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-06 21:51:08 [INFO] Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-06 21:51:08 [INFO]   已添加每周任务: 每周日 3:00 测试模型并同步到客户端
+2026-08-06 21:51:08 [INFO] Added job "refresh_job" to job store "default"
+2026-08-06 21:51:08 [INFO] Added job "refresh_job" to job store "default"
+2026-08-06 21:51:08 [INFO] Added job "refresh_job" to job store "default"
+2026-08-06 21:51:08 [INFO] Added job "weekly_test_and_sync_job" to job store "default"
+2026-08-06 21:51:08 [INFO] Scheduler started
+2026-08-06 21:51:08 [INFO] 定时调度器已启动
+2026-08-06 21:51:08 [INFO] ✅ Free Models Hub 后端启动完成!
+2026-08-06 21:51:08 [INFO] Removed job initial_refresh
+INFO:     Application startup complete.
+2026-08-06 21:51:08 [INFO] Running job "refresh_job (trigger: date[2026-08-06 21:51:08 +08], next run at: 2026-08-06 21:51:08 +08)" (scheduled at 2026-08-06 21:51:08.864405+08:00)
+2026-08-06 21:51:08 [INFO] [2026-08-06 21:51:08.867075] 开始定时刷新所有 Provider
+2026-08-06 21:51:08 [INFO] [freeze:agnes] 返回冻结清单 8 个模型
+2026-08-06 21:51:08 [INFO]   ✅ agnes: 8 models
+2026-08-06 21:51:08 [INFO] [freeze:agnes_com] 返回冻结清单 7 个模型
+2026-08-06 21:51:08 [INFO]   ✅ agnes_com: 7 models
+2026-08-06 21:51:08 [INFO] [freeze:blazeai] 返回冻结清单 2 个模型
+2026-08-06 21:51:08 [INFO]   ✅ blazeai: 2 models
+2026-08-06 21:51:08 [INFO] [freeze:chat2api] 返回冻结清单 6 个模型
+2026-08-06 21:51:08 [INFO]   ✅ chat2api: 6 models
+2026-08-06 21:51:08 [INFO] [freeze:cpamc] 返回冻结清单 16 个模型
+2026-08-06 21:51:09 [INFO]   ✅ cpamc: 16 models
+2026-08-06 21:51:09 [INFO] [freeze:cerebras] 返回冻结清单 2 个模型
+2026-08-06 21:51:09 [INFO]   ✅ cerebras: 2 models
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+2026-08-06 21:51:17 [WARNING] gemini API 失败: , 使用已知模型降级
+2026-08-06 21:51:17 [INFO]   ✅ gemini: 7 models
+  [OK] 已初始化 22 个 Provider
+  [OK] 已自动发现 41 个爬虫: ['agnes', 'alibaba_bailian', 'anyrouter', 'blazeai', 'cerebras', 'cf_gateway_free', 'cohere', 'cpamc', 'ds2api', 'agnes_com', 'chat2api', 'ds2api_vercel', 'freeze', 'fyra', 'grok2api', 'groq', 'kilo', 'manifest_1111', 'manifest', 'modelscope', 'nararouter', 'nvidia', 'omniroute', 'opencode', 'openrouter', 'peezy', 'scnet', 'sensenova', 'step', 'webai2api', 'gemini', 'github_models', 'grok', 'minimax', 'mollinations', '9router', 'notdiamond', 'novity', 'xai', 'zen', 'zhipu']
+  [+] Hermes Agent: Agnes AI: 8 models, key_env=AGNES_API_KEY
+  [+] Hermes Agent: Agnes.com: 7 models, key_env=AGNES_API_KEY
+  [+] Hermes Agent: Blazeai: 2 models, key_env=
+  [+] Hermes Agent: CHAT2API: 6 models, key_env=
+  [+] Hermes Agent: CPAMC: 16 models, key_env=
+  [+] Hermes Agent: Cerebras: 2 models, key_env=CEREBRAS_API_KEY
+  [+] Hermes Agent: Gemini: 55 models, key_env=
+  [+] Hermes Agent: Grok: 2 models, key_env=
+  [+] Hermes Agent: Groq: 11 models, key_env=GROQ_API_KEY
+  [+] Hermes Agent: Manifest: 259 models, key_env=
+  [+] Hermes Agent: Manifest-1111: 10 models, key_env=
+  [+] Hermes Agent: Modelscope: 37 models, key_env=
+  [+] Hermes Agent: NVIDIA: 22 models, key_env=NVIDIA_API_KEY
+  [+] Hermes Agent: Nararouter: 2 models, key_env=
+  [+] Hermes Agent: OmniRoute: 15 models, key_env=
+  [+] Hermes Agent: OpenCode: 7 models, key_env=
+  [+] Hermes Agent: OpenRouter: 13 models, key_env=
+  [+] Hermes Agent: SenseNova: 3 models, key_env=SENSENOVA_API_KEY
+  [+] Hermes Agent: Step: 1 models, key_env=
+  [+] Hermes Agent: Webai2api: 21 models, key_env=
+  [+] Hermes Agent: X.ai: 4 models, key_env=XAI_API_KEY
+  [+] Hermes Agent: Zen API: 8 models, key_env=
+  [+] Hermes Agent: kilo: 7 models, key_env=
+  [+] Hermes Agent: 超算: 1 models, key_env=
+  [+] Hermes Agent: 保留 7 个非 FMH 自定义 providers
+INFO:     127.0.0.1:51556 - "POST /api/sync/clients HTTP/1.1" 200 OK
+2026-08-06 21:51:28 [WARNING] github_models API 失败, 降级到已知模型列表: 
+2026-08-06 21:51:28 [INFO]   ✅ github_models: 0 models
+2026-08-06 21:51:39 [INFO]   ✅ grok: 2 models
+2026-08-06 21:51:39 [INFO] [freeze:groq] 返回冻结清单 11 个模型
+2026-08-06 21:51:39 [INFO]   ✅ groq: 11 models
+2026-08-06 21:51:39 [INFO] [freeze:manifest] 返回冻结清单 259 个模型
+2026-08-06 21:51:39 [INFO]   ✅ manifest: 259 models
+2026-08-06 21:51:39 [INFO] [freeze:manifest_1111] 返回冻结清单 10 个模型
+2026-08-06 21:51:39 [INFO]   ✅ manifest_1111: 10 models
+2026-08-06 21:51:40 [INFO] HTTP Request: GET https://api.minimax.chat/v1/models "HTTP/1.1 401 Unauthorized"
+2026-08-06 21:51:40 [INFO] HTTP Request: GET https://api.minimax.chat/v1/models/list "HTTP/1.1 401 Unauthorized"
+2026-08-06 21:51:40 [WARNING] MiniMax API 需要 API Key，使用已知模型
+2026-08-06 21:51:40 [INFO]   ✅ minimax: 0 models
+2026-08-06 21:51:40 [INFO] [freeze:modelscope] 返回冻结清单 37 个模型
+2026-08-06 21:51:40 [INFO]   ✅ modelscope: 37 models
+2026-08-06 21:51:50 [INFO]   ✅ mollinations: 0 models
+2026-08-06 21:51:50 [INFO] [freeze:nvidia] 返回冻结清单 22 个模型
+2026-08-06 21:51:50 [INFO]   ✅ nvidia: 22 models
+2026-08-06 21:51:50 [INFO] [freeze:nararouter] 返回冻结清单 2 个模型
+2026-08-06 21:51:51 [INFO]   ✅ nararouter: 2 models
+2026-08-06 21:52:06 [WARNING] notdiamond API 请求失败: 
+2026-08-06 21:52:07 [INFO]   ✅ notdiamond: 0 models
+2026-08-06 21:52:17 [WARNING] novity API 请求失败: , 使用已知模型降级
+2026-08-06 21:52:17 [INFO]   ✅ novity: 0 models
+2026-08-06 21:52:17 [INFO] [freeze:omniroute] 返回冻结清单 15 个模型
+2026-08-06 21:52:17 [INFO]   ✅ omniroute: 15 models
+2026-08-06 21:52:17 [INFO] [freeze:opencode] 返回冻结清单 7 个模型
+2026-08-06 21:52:17 [INFO]   ✅ opencode: 7 models
+2026-08-06 21:52:17 [INFO] [freeze:openrouter] 返回冻结清单 13 个模型
+2026-08-06 21:52:17 [INFO]   ✅ openrouter: 13 models
+2026-08-06 21:52:17 [INFO] [freeze:sensenova] 返回冻结清单 3 个模型
+2026-08-06 21:52:17 [INFO]   ✅ sensenova: 3 models
+2026-08-06 21:52:17 [INFO] [freeze:step] 返回冻结清单 1 个模型
+2026-08-06 21:52:17 [INFO]   ✅ step: 1 models
+2026-08-06 21:52:17 [INFO] [freeze:webai2api] 返回冻结清单 21 个模型
+2026-08-06 21:52:17 [INFO]   ✅ webai2api: 21 models
+2026-08-06 21:52:27 [INFO] HTTP Request: GET https://cloudflare-dns.com/dns-query?name=api.x.ai&type=A "HTTP/1.1 200 OK"
+2026-08-06 21:52:27 [INFO] DoH 解析 api.x.ai -> 104.18.18.80
+2026-08-06 21:52:33 [WARNING] xAI API 请求失败 (ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'api.x.ai'. (_ssl.c:1032))，回退到已知模型
+2026-08-06 21:52:33 [WARNING] xAI API 请求失败 (ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'api.x.ai'. (_ssl.c:1032))，使用已知模型
+2026-08-06 21:52:33 [INFO]   ✅ xai: 4 models
+2026-08-06 21:52:37 [INFO] HTTP Request: GET https://opencode.ai/zen/v1/models "HTTP/1.1 200 OK"
+2026-08-06 21:52:37 [INFO]   ✅ zen: 8 models
+2026-08-06 21:52:37 [INFO] [freeze:kilo] 返回冻结清单 7 个模型
+2026-08-06 21:52:37 [INFO]   ✅ kilo: 7 models
+2026-08-06 21:52:37 [INFO] [freeze:scnet] 返回冻结清单 1 个模型
+2026-08-06 21:52:37 [INFO]   ✅ scnet: 1 models
+2026-08-06 21:52:37 [INFO] [2026-08-06 21:52:37.223525] 定时刷新完成
+2026-08-06 21:52:37 [INFO] Job "refresh_job (trigger: date[2026-08-06 21:51:08 +08], next run at: 2026-08-06 21:51:08 +08)" executed successfully
+  [WARNING] Pollinations API 请求失败: ，使用已知模型降级
+INFO:     127.0.0.1:51368 - "GET /api/hermes/providers-config?format=json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61362 - "GET /api/providers?active_only=false&include_hidden=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52860 - "GET /api/hermes/providers-config?format=json HTTP/1.1" 200 OK
+2026-08-07 02:00:00 [INFO] Running job "refresh_job (trigger: cron[hour='2', minute='0'], next run at: 2026-08-08 02:00:00 CST)" (scheduled at 2026-08-07 02:00:00+08:00)
+2026-08-07 02:00:00 [INFO] [2026-08-07 02:00:00.029573] 开始定时刷新所有 Provider
+2026-08-07 02:00:00 [INFO] [freeze:agnes] 返回冻结清单 8 个模型
+2026-08-07 02:00:00 [INFO]   ✅ agnes: 8 models
+2026-08-07 02:00:00 [INFO] [freeze:agnes_com] 返回冻结清单 7 个模型
+2026-08-07 02:00:00 [INFO]   ✅ agnes_com: 7 models
+2026-08-07 02:00:00 [INFO] [freeze:blazeai] 返回冻结清单 2 个模型
+2026-08-07 02:00:00 [INFO]   ✅ blazeai: 2 models
+2026-08-07 02:00:00 [INFO] [freeze:chat2api] 返回冻结清单 6 个模型
+2026-08-07 02:00:00 [INFO]   ✅ chat2api: 6 models
+2026-08-07 02:00:00 [INFO] [freeze:cpamc] 返回冻结清单 16 个模型
+2026-08-07 02:00:00 [INFO]   ✅ cpamc: 16 models
+2026-08-07 02:00:00 [INFO] [freeze:cerebras] 返回冻结清单 2 个模型
+2026-08-07 02:00:00 [INFO]   ✅ cerebras: 2 models
+2026-08-07 02:00:02 [INFO] HTTP Request: GET https://generativelanguage.googleapis.com/v1beta/models?key=AIzaSyDo_F4JUdaKT4dxAm1PdVkYs3rcfgGUNac "HTTP/1.1 200 OK"
+2026-08-07 02:00:03 [INFO]   ✅ gemini: 50 models
+2026-08-07 02:00:05 [INFO] HTTP Request: GET https://api.github.com/marketplace/models "HTTP/1.1 404 Not Found"
+2026-08-07 02:00:05 [INFO]   ✅ github_models: 0 models
+2026-08-07 02:00:07 [INFO] HTTP Request: GET https://api.x.ai/v1/models "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:07 [INFO]   ✅ grok: 2 models
+2026-08-07 02:00:08 [INFO] [freeze:groq] 返回冻结清单 11 个模型
+2026-08-07 02:00:08 [INFO]   ✅ groq: 11 models
+2026-08-07 02:00:08 [INFO] [freeze:manifest] 返回冻结清单 259 个模型
+2026-08-07 02:00:08 [INFO]   ✅ manifest: 259 models
+2026-08-07 02:00:08 [INFO] [freeze:manifest_1111] 返回冻结清单 10 个模型
+2026-08-07 02:00:08 [INFO]   ✅ manifest_1111: 10 models
+2026-08-07 02:00:08 [INFO] HTTP Request: GET https://api.minimax.chat/v1/models "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:09 [INFO] HTTP Request: GET https://api.minimax.chat/v1/models/list "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:09 [WARNING] MiniMax API 需要 API Key，使用已知模型
+2026-08-07 02:00:09 [INFO]   ✅ minimax: 0 models
+2026-08-07 02:00:09 [INFO] [freeze:modelscope] 返回冻结清单 37 个模型
+2026-08-07 02:00:09 [INFO]   ✅ modelscope: 37 models
+2026-08-07 02:00:11 [INFO] HTTP Request: GET https://gen.pollinations.ai/v1/models "HTTP/1.1 200 OK"
+2026-08-07 02:00:14 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:14 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:14 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:14 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:15 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:15 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:15 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:15 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:16 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:16 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:16 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:16 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:16 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:16 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:16 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:16 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:16 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:16 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:17 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:17 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:17 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:17 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:17 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:17 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:18 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:18 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:18 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:18 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:18 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:18 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:18 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:19 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:19 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:19 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:19 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:19 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:19 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:19 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:19 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:19 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:19 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:19 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:20 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:20 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:20 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:20 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:20 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:20 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:20 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:20 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:20 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:20 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:20 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:21 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:21 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:21 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:21 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:21 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:21 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:21 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:21 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:21 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:22 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:22 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:22 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:22 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:22 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:22 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:22 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-07 02:00:22 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:22 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:22 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:22 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:22 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:22 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:23 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:23 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:23 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:23 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:23 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:23 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:23 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:23 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:23 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:23 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:23 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:24 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:24 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:24 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:24 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:24 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:24 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:24 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:24 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:24 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:24 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:24 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:24 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:25 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:26 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:26 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:26 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:26 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:26 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:26 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:26 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:26 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:26 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:26 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:26 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:26 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:26 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:27 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:27 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:27 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:27 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:27 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:27 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:27 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:27 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:27 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:27 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:27 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:27 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:28 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:28 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:28 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:28 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:28 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:28 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:28 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:28 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:28 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:28 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:28 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:28 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:28 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:29 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:29 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:29 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:29 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:29 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:29 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:29 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:29 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:29 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:29 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-08-07 02:00:30 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:30 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:30 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:30 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:30 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:30 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:30 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:30 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:30 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:30 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:30 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:30 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:30 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:31 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:31 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:31 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:31 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:31 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:31 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:31 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:31 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:31 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:31 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:31 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:31 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:32 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:32 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:32 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:32 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:32 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:32 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:32 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:32 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:32 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:32 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:33 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:33 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:33 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:33 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:33 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:33 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:33 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:33 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:33 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:33 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:34 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:34 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:34 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:34 [INFO] HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-08-07 02:00:34 [INFO]   ✅ mollinations: 0 models
+2026-08-07 02:00:34 [INFO] [freeze:nvidia] 返回冻结清单 22 个模型
+2026-08-07 02:00:34 [INFO]   ✅ nvidia: 22 models
+2026-08-07 02:00:34 [INFO] [freeze:nararouter] 返回冻结清单 2 个模型
+2026-08-07 02:00:34 [INFO]   ✅ nararouter: 2 models
+2026-08-07 02:00:36 [INFO] HTTP Request: GET https://api.notdiamond.ai/v2/models "HTTP/1.1 200 OK"
+2026-08-07 02:00:36 [INFO]   ✅ notdiamond: 0 models
+2026-08-07 02:00:41 [INFO] HTTP Request: GET https://api.novita.ai/v3/openai/models "HTTP/1.1 200 OK"
+2026-08-07 02:00:44 [INFO]   ✅ novity: 1 models
+2026-08-07 02:00:44 [INFO] [freeze:omniroute] 返回冻结清单 15 个模型
+2026-08-07 02:00:44 [INFO]   ✅ omniroute: 15 models
+2026-08-07 02:00:44 [INFO] [freeze:opencode] 返回冻结清单 7 个模型
+2026-08-07 02:00:44 [INFO]   ✅ opencode: 7 models
+2026-08-07 02:00:44 [INFO] [freeze:openrouter] 返回冻结清单 13 个模型
+2026-08-07 02:00:44 [INFO]   ✅ openrouter: 13 models
+2026-08-07 02:00:44 [INFO] [freeze:sensenova] 返回冻结清单 3 个模型
+2026-08-07 02:00:44 [INFO]   ✅ sensenova: 3 models
+2026-08-07 02:00:44 [INFO] [freeze:step] 返回冻结清单 1 个模型
+2026-08-07 02:00:44 [INFO]   ✅ step: 1 models
+2026-08-07 02:00:44 [INFO] [freeze:webai2api] 返回冻结清单 21 个模型
+2026-08-07 02:00:44 [INFO]   ✅ webai2api: 21 models
+2026-08-07 02:00:49 [INFO] HTTP Request: GET https://api.x.ai/v1/models "HTTP/1.1 403 Forbidden"
+2026-08-07 02:00:49 [WARNING] xAI API 请求失败 (HTTPStatusError: Client error '403 Forbidden' for url 'https://api.x.ai/v1/models'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403)，回退到已知模型
+2026-08-07 02:00:49 [WARNING] xAI API 请求失败 (HTTPStatusError: Client error '403 Forbidden' for url 'https://api.x.ai/v1/models'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403)，使用已知模型
+2026-08-07 02:00:49 [INFO]   ✅ xai: 4 models
+2026-08-07 02:00:57 [INFO] HTTP Request: GET https://opencode.ai/zen/v1/models "HTTP/1.1 200 OK"
+2026-08-07 02:00:57 [INFO]   ✅ zen: 8 models
+2026-08-07 02:00:57 [INFO] [freeze:kilo] 返回冻结清单 7 个模型
+2026-08-07 02:00:57 [INFO]   ✅ kilo: 7 models
+2026-08-07 02:00:57 [INFO] [freeze:scnet] 返回冻结清单 1 个模型
+2026-08-07 02:00:57 [INFO]   ✅ scnet: 1 models
+2026-08-07 02:00:57 [INFO] [2026-08-07 02:00:57.815492] 定时刷新完成
+2026-08-07 02:00:57 [INFO] Job "refresh_job (trigger: cron[hour='2', minute='0'], next run at: 2026-08-08 02:00:00 CST)" executed successfully
+  [INFO] mollinations: 发送 'Hi' 测试了 215 个模型，24 个有回应（标记免费），191 个无回应（已删除）
+INFO:     127.0.0.1:61427 - "GET /api/hermes/providers-config?format=json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61884 - "GET /api/models?page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56214 - "GET /api/hermes/providers-config?format=json HTTP/1.1" 200 OK
+2026-08-07 07:30:21 [INFO] 上下文同步完成: 总模型 5710, 更新 5323, dev_cache providers 180, OpenRouter 模型 0, 经验默认值 4155 个
+INFO:     127.0.0.1:61376 - "POST /api/context/sync?use_dev_cache=true&use_openrouter=false HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55464 - "GET /api/models?provider=omniroute&page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55464 - "GET /api/models?provider=omniroute&page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54938 - "GET /api/context/coverage HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53117 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53117 - "GET /api/providers?active_only=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61442 - "GET /api/classify/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61442 - "GET /api/models?capability_tier=1&page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61442 - "GET /api/context/coverage HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61585 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61585 - "GET /api/providers?active_only=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61598 - "GET /api/classify/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61598 - "GET /api/models?capability_tier=1&page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61598 - "GET /api/context/coverage HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64605 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64605 - "GET /api/providers?active_only=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61362 - "GET /api/classify/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61362 - "GET /api/models?capability_tier=1&page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61362 - "GET /api/context/coverage HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61362 - "GET /api/providers?active_only=false&include_hidden=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56833 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56836 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56836 - "GET /api/providers?active_only=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56836 - "GET /api/classify/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56836 - "GET /api/models?capability_tier=1&page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56836 - "GET /api/context/coverage HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63464 - "GET /api/models?provider=scnet&page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63464 - "GET /api/models?capability_tier=1&provider=scnet&page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63464 - "GET /api/models?capability_tier=2&provider=scnet&page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61826 - "GET /api/models?capability_tier=1&provider=gemini&page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62144 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62144 - "GET /api/providers?active_only=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /api/classify/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /api/models?capability_tier=1&page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /api/context/coverage HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61827 - "GET /api/models?page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63068 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63068 - "GET /api/classify/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63068 - "GET /api/classify/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63068 - "GET /api/providers?active_only=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63068 - "GET /api/models?capability_tier=1&page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63068 - "GET /api/context/coverage HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61366 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61366 - "GET /api/classify/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52999 - "GET /api/classify/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52999 - "GET /api/providers?active_only=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61366 - "GET /api/models?capability_tier=1&page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61366 - "GET /api/context/coverage HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61366 - "GET /api/models?capability_tier=1&page=1&page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64903 - "GET /api/classify/stats HTTP/1.1" 200 OK

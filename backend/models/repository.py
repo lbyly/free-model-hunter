@@ -936,6 +936,7 @@ PA_PROVIDER_MAP = {
     "Fyra": "fyra",
     "商汤": "sensenova",
     "OmniRoute": "omniroute",
+    "Peezy": "peezy",
     "Cerebras": "cerebras",
     "Grok2api": "grok2api",
     "kilo": "kilo",
@@ -946,12 +947,15 @@ PA_PROVIDER_MAP = {
 }
 
 
-def apply_pa_removed(pa_models_by_provider: dict) -> dict:
+def apply_pa_removed(pa_models_by_provider: dict, pa_provider_info: dict = None) -> dict:
     """以 Page Assist 模型清单为基准重算全库 user_removed（provider 级匹配）：
     - FMH provider 有对应 PA provider：该 provider 下模型 ID 在对应 PA 清单中
       -> 0（可见），否则 -> 1（隐藏）
     - FMH provider 无对应 PA provider：全部 -> 1（隐藏）
-    参数: {PA提供商名称: [原始模型ID, ...]}
+    - PA 清单中有、PA_PROVIDER_MAP 没有的新提供商：自动创建 provider 并补录模型
+      （英文名自动生成 slug；Base URL 取自 pa_provider_info；中文名/无法生成
+      slug/slug 冲突时跳过并在 providers_skipped 中说明）
+    参数: {PA提供商名称: [原始模型ID, ...]}, pa_provider_info: {PA提供商名称: {"base_url": ...}}
     自动备份数据库后执行，返回统计。
     """
     import re
@@ -965,24 +969,76 @@ def apply_pa_removed(pa_models_by_provider: dict) -> dict:
         s = re.sub(r"-+", "-", s)
         return s.strip("-")
 
-    # FMH slug -> PA 归一化 ID 集合（一个 PA 提供商可对应多个 FMH provider）
-    pa_ids_by_slug = {}
-    for pa_name, ids in pa_models_by_provider.items():
-        slugs = PA_PROVIDER_MAP.get(pa_name)
-        if not slugs:
-            continue
-        if isinstance(slugs, str):
-            slugs = [slugs]
-        for slug in slugs:
-            pa_ids_by_slug.setdefault(slug, set()).update(norm(x) for x in ids)
+    def auto_pa_slug(pa_name):
+        """PA 提供商名 -> 自动 slug；无法可靠生成（中文/特殊字符开头）返回 None"""
+        s = (pa_name or "").strip().lower()
+        if not s or not re.match(r"^[a-z0-9]", s):
+            return None
+        s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
+        return s or None
+
+    pa_provider_info = pa_provider_info or {}
 
     # 备份
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     bak = f"{DATABASE_PATH}.bak-{ts}"
     shutil.copy2(DATABASE_PATH, bak)
 
-    stats = {"total": 0, "to_show": 0, "to_hide": 0, "visible": 0, "hidden": 0, "added": 0}
+    stats = {
+        "total": 0, "to_show": 0, "to_hide": 0,
+        "visible": 0, "hidden": 0, "added": 0,
+        "providers_added": 0, "providers_skipped": [],
+    }
     with get_db() as db:
+        slug_ids = {}
+        for r in db.execute("SELECT id, slug FROM providers"):
+            slug_ids[r["slug"]] = r["id"]
+
+        # 自动创建：PA 清单中有、显式映射没有、slug 可生成且不冲突的新提供商
+        auto_slug_of = {}
+        for pa_name in pa_models_by_provider:
+            if PA_PROVIDER_MAP.get(pa_name):
+                continue
+            slug = auto_pa_slug(pa_name)
+            if not slug:
+                stats["providers_skipped"].append(
+                    f"{pa_name}: 无法自动生成 slug（中文/特殊字符开头），请在 PA_PROVIDER_MAP 手动添加"
+                )
+                continue
+            if slug in slug_ids:
+                stats["providers_skipped"].append(
+                    f"{pa_name}: slug `{slug}` 已存在，为避免误合并请手动确认映射"
+                )
+                continue
+            info = pa_provider_info.get(pa_name, {})
+            cur = db.execute(
+                "INSERT INTO providers (name, slug, website, scrape_url, scraper_class, is_active, hidden) "
+                "VALUES (?,?,?,?,?,1,0)",
+                (pa_name, slug, "", info.get("base_url", ""), ""),
+            )
+            slug_ids[slug] = cur.lastrowid
+            auto_slug_of[pa_name] = slug
+            stats["providers_added"] += 1
+
+        def resolve_slugs(pa_name):
+            """PA 提供商名 -> FMH slug 列表（显式映射优先，其次自动 slug 匹配）"""
+            slugs = PA_PROVIDER_MAP.get(pa_name)
+            if isinstance(slugs, str):
+                slugs = [slugs]
+            if not slugs:
+                # 自动 slug 匹配：本次自动创建的、或此前已存在（同名自动创建的）provider
+                slug = auto_pa_slug(pa_name)
+                if slug and slug in slug_ids:
+                    slugs = [slug]
+            return slugs or []
+
+        # FMH slug -> PA 归一化 ID 集合（一个 PA 提供商可对应多个 FMH provider）
+        pa_ids_by_slug = {}
+        for pa_name, ids in pa_models_by_provider.items():
+            for slug in resolve_slugs(pa_name):
+                pa_ids_by_slug.setdefault(slug, set()).update(norm(x) for x in ids)
+
+        # 重算可见性
         rows = db.execute(
             """SELECT m.id, m.model_id, m.user_removed, p.slug
                FROM models m JOIN providers p ON m.provider_id = p.id"""
@@ -1006,26 +1062,18 @@ def apply_pa_removed(pa_models_by_provider: dict) -> dict:
 
         # 补录：PA 清单中有但库中缺失的模型 -> 自动创建记录（可见）
         # 优先从全库其他 provider 复制同名模型元数据；全库没有则建基础记录
-        slug_ids = {}
-        for r in db.execute("SELECT id, slug FROM providers"):
-            slug_ids[r["slug"]] = r["id"]
         for pa_name, raw_ids in pa_models_by_provider.items():
-            slugs = PA_PROVIDER_MAP.get(pa_name)
-            if not slugs:
-                continue
-            if isinstance(slugs, str):
-                slugs = [slugs]
-            for slug in slugs:
-                if slug not in slug_ids:
+            for slug in resolve_slugs(pa_name):
+                pid = slug_ids.get(slug)
+                if pid is None:
                     continue
-                pid = slug_ids[slug]
-            # 一次性构建该 provider 的 norm -> (id, model_id) 映射（用于改名对齐）
-            provider_rows = db.execute(
-                "SELECT id, model_id FROM models WHERE provider_id = ?", (pid,)
-            ).fetchall()
-            norm_to_row = {}
-            for pr in provider_rows:
-                norm_to_row.setdefault(norm(pr["model_id"]), pr)
+                # 一次性构建该 provider 的 norm -> (id, model_id) 映射（用于改名对齐）
+                provider_rows = db.execute(
+                    "SELECT id, model_id FROM models WHERE provider_id = ?", (pid,)
+                ).fetchall()
+                norm_to_row = {}
+                for pr in provider_rows:
+                    norm_to_row.setdefault(norm(pr["model_id"]), pr)
                 for mid in raw_ids:
                     if not mid or not mid.strip():
                         continue
