@@ -3203,55 +3203,60 @@
         }
       });
 
-      paImportBtn.addEventListener("click", async () => {
+      async function runPaImport(content) {
+        try {
+          paImportBtn.disabled = true;
+          paImportBtn.textContent = "正在处理...";
+          paImportStatus.style.display = "none";
+
+          const res = await fetch(`${apiBase}/import-pa-models`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(content ? { content } : {}),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || "未知错误");
+
+          const s = data.stats;
+          const srcLabel = data.source ? `（来源：${data.source}）` : "";
+          paImportStatus.className = "test-status-msg success";
+          paImportStatus.textContent =
+            `更新完成！识别到 ${data.pa_count} 个 PA 模型，` +
+            `共 ${s.total} 个模型：可见 ${s.visible} 个（恢复 ${s.to_show} 个），` +
+            `隐藏 ${s.hidden} 个（新增隐藏 ${s.to_hide} 个），` +
+            `补录 ${s.added ?? 0} 个。备份：${data.backup} ${srcLabel}`;
+          paImportStatus.style.display = "block";
+
+          paImportFile.value = "";
+          paFileName.textContent = "未选择文件（将自动读取最新导出）";
+          await loadProviders();
+          await loadModels();
+          await loadStats();
+        } catch (err) {
+          paImportStatus.className = "test-status-msg error";
+          paImportStatus.textContent = "导入失败: " + err.message;
+          paImportStatus.style.display = "block";
+        } finally {
+          paImportBtn.disabled = false;
+          paImportBtn.textContent = "导入并重算 user_removed";
+        }
+      }
+
+      paImportBtn.addEventListener("click", () => {
         const file = paImportFile.files[0];
         const confirmMsg = file
-          ? "导入后将按所选文件重算全部模型的 user_removed（清单有的=可见，没有的=隐藏）。继续？"
+          ? "导入后将按所选文件重算全部模型的 user_removed（清单有的=可见，缺失的自动补录，没有的=隐藏）。继续？"
           : "未选择文件，将自动读取 D:/syncthing backup/重要备份 下最新的 page-assist-all-models-*.md 并重算 user_removed（缺失的新模型将自动补录）。继续？";
         if (!confirm(confirmMsg)) {
           return;
         }
-
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          try {
-            const content = e.target.result;
-            paImportBtn.disabled = true;
-            paImportBtn.textContent = "正在处理...";
-            paImportStatus.style.display = "none";
-
-            const res = await fetch(`${apiBase}/import-pa-models`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(file ? { content } : {}),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.detail || "未知错误");
-
-            const s = data.stats;
-            const srcLabel = data.source ? `（来源：${data.source}）` : "";
-            paImportStatus.className = "test-status-msg success";
-            paImportStatus.textContent =
-              `更新完成！识别到 ${data.pa_count} 个 PA 模型，` +
-              `共 ${s.total} 个模型：可见 ${s.visible} 个（恢复 ${s.to_show} 个），` +
-              `隐藏 ${s.hidden} 个（新增隐藏 ${s.to_hide} 个），` +
-              `补录 ${s.added ?? 0} 个。备份：${data.backup} ${srcLabel}`;
-            paImportStatus.style.display = "block";
-
-            paImportFile.value = "";
-            paFileName.textContent = "未选择文件（将自动读取最新导出）";
-            await loadProviders();
-            await loadModels();
-            await loadStats();
-          } catch (err) {
-            paImportStatus.className = "test-status-msg error";
-            paImportStatus.textContent = "导入失败: " + err.message;
-            paImportStatus.style.display = "block";
-          } finally {
-            paImportBtn.textContent = "导入并重算 user_removed";
-          }
-        };
-        reader.readAsText(file);
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => runPaImport(e.target.result);
+          reader.readAsText(file);
+        } else {
+          runPaImport(null);
+        }
       });
 
       const localBackupBtn = document.getElementById("localBackupBtn");
