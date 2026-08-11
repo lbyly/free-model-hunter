@@ -151,9 +151,9 @@ async def local_backup():
 
 @router.post("/import-pa-models")
 async def import_pa_models(data: dict):
-    """导入 Page Assist 导出的模型清单，重算全库 user_removed：
-    PA 清单中有的模型 -> 可见(0)，没有的 -> 隐藏(1)。
-    请求体: {"content": "<md文本>"} 或 {"model_ids": [...]}；
+    """导入 Page Assist 导出的模型清单，重算全库 user_removed（provider 级匹配）：
+    对应 PA 提供商清单中有的模型 -> 可见(0)，其余（含无对应 PA 提供商的 FMH 提供商）-> 隐藏(1)。
+    请求体: {"content": "<md文本>"} 或 {"model_ids_by_provider": {"Manifest": [...], ...}}；
     都不传时自动读取 D:/syncthing backup/重要备份 下最新的 page-assist-all-models-*.md。
     """
     import re
@@ -162,10 +162,10 @@ async def import_pa_models(data: dict):
     from models.repository import apply_pa_removed
 
     content = data.get("content") or ""
-    model_ids = data.get("model_ids") or []
+    model_ids_by_provider = data.get("model_ids_by_provider") or {}
     source = "upload"
 
-    if not content and not model_ids:
+    if not content and not model_ids_by_provider:
         base = r"D:\syncthing backup\重要备份"
         files = glob.glob(os.path.join(base, "page-assist-all-models-*.md"))
         if not files:
@@ -177,15 +177,26 @@ async def import_pa_models(data: dict):
         content = open(latest, "r", encoding="utf-8").read()
         source = f"auto:{os.path.basename(latest)}"
 
-    if not model_ids:
-        # 从 MD 文本中提取所有「原始模型ID」
-        model_ids = re.findall(r"\*\*原始模型ID\*\*:\s*`([^`]+)`", content)
-    if not model_ids:
+    if not model_ids_by_provider:
+        # 按章节解析 MD：## 提供商名 (N) 下的「原始模型ID」
+        current = None
+        for line in content.splitlines():
+            m = re.match(r"^##\s+(.+?)\s+\(\d+\)", line)
+            if m:
+                current = m.group(1).strip()
+                model_ids_by_provider.setdefault(current, [])
+                continue
+            m2 = re.search(r"\*\*原始模型ID\*\*:\s*`([^`]+)`", line)
+            if m2 and current:
+                model_ids_by_provider[current].append(m2.group(1).strip())
+
+    total_ids = sum(len(v) for v in model_ids_by_provider.values())
+    if not total_ids:
         raise HTTPException(status_code=400, detail="未能从文件中解析到任何模型 ID，请确认是 Page Assist 导出的 MD 清单")
 
     try:
-        result = apply_pa_removed(set(model_ids))
-        return {"success": True, "pa_count": len(set(model_ids)), "source": source, **result}
+        result = apply_pa_removed(model_ids_by_provider)
+        return {"success": True, "pa_count": total_ids, "source": source, **result}
     except HTTPException:
         raise
     except Exception as e:

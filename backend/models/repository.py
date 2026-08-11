@@ -917,9 +917,41 @@ def backup_local_database() -> str:
     shutil.copy2(db_file, backup_file)
     return backup_file.name
 
-def apply_pa_removed(pa_model_ids: set) -> dict:
-    """以 Page Assist 模型清单为基准重算全库 user_removed：
-    PA 清单中有的模型 -> 0（可见），没有的 -> 1（隐藏）。
+# Page Assist 提供商名称 -> FMH provider slug 映射（provider 级匹配用）
+PA_PROVIDER_MAP = {
+    "Blazeapi": "blazeai",
+    "CHAT2API": "chat2api",
+    "CPAMC": "cpamc",
+    "Modelscope": "modelscope",
+    "超算": "scnet",
+    "Agnes.cn": "agnes",
+    "Agnes.com": "agnes_com",
+    "Manifest": "manifest",
+    "Groq": "groq",
+    "Opencode Zen": "opencode",
+    "Webai2api": "webai2api",
+    "Openrouter": "openrouter",
+    "Cohere": "cohere",
+    "Nvidia": "nvidia",
+    "Fyra": "fyra",
+    "商汤": "sensenova",
+    "OmniRoute": "omniroute",
+    "Cerebras": "cerebras",
+    "Grok2api": "grok2api",
+    "kilo": "kilo",
+    "Nararouter": "nararouter",
+    "Step": "step",
+    "CF-Gateway-Free": "cf_gateway_free",
+    "Manifest-1111": "manifest_1111",
+}
+
+
+def apply_pa_removed(pa_models_by_provider: dict) -> dict:
+    """以 Page Assist 模型清单为基准重算全库 user_removed（provider 级匹配）：
+    - FMH provider 有对应 PA provider：该 provider 下模型 ID 在对应 PA 清单中
+      -> 0（可见），否则 -> 1（隐藏）
+    - FMH provider 无对应 PA provider：全部 -> 1（隐藏）
+    参数: {PA提供商名称: [原始模型ID, ...]}
     自动备份数据库后执行，返回统计。
     """
     import re
@@ -933,7 +965,12 @@ def apply_pa_removed(pa_model_ids: set) -> dict:
         s = re.sub(r"-+", "-", s)
         return s.strip("-")
 
-    pa_ids = {norm(x) for x in pa_model_ids}
+    # FMH slug -> PA 归一化 ID 集合
+    pa_ids_by_slug = {}
+    for pa_name, ids in pa_models_by_provider.items():
+        slug = PA_PROVIDER_MAP.get(pa_name)
+        if slug:
+            pa_ids_by_slug.setdefault(slug, set()).update(norm(x) for x in ids)
 
     # 备份
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -942,10 +979,17 @@ def apply_pa_removed(pa_model_ids: set) -> dict:
 
     stats = {"total": 0, "to_show": 0, "to_hide": 0, "visible": 0, "hidden": 0}
     with get_db() as db:
-        rows = db.execute("SELECT id, model_id, user_removed FROM models").fetchall()
+        rows = db.execute(
+            """SELECT m.id, m.model_id, m.user_removed, p.slug
+               FROM models m JOIN providers p ON m.provider_id = p.id"""
+        ).fetchall()
         stats["total"] = len(rows)
         for r in rows:
-            new_val = 0 if norm(r["model_id"]) in pa_ids else 1
+            pa_ids = pa_ids_by_slug.get(r["slug"])
+            if pa_ids is None:
+                new_val = 1  # FMH 无对应 PA provider -> 全部隐藏
+            else:
+                new_val = 0 if norm(r["model_id"]) in pa_ids else 1
             old_val = r["user_removed"] or 0
             if new_val == 0 and old_val != 0:
                 stats["to_show"] += 1
