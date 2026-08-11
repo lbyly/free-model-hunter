@@ -1031,8 +1031,8 @@ def apply_pa_removed(pa_models_by_provider: dict) -> dict:
                 similar = norm_to_row.get(norm(mid))
                 if similar:
                     db.execute(
-                        "UPDATE models SET model_id = ?, user_removed = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                        (mid, similar["id"]),
+                        "UPDATE models SET model_id = ?, name = ?, user_removed = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                        (mid, mid, similar["id"]),
                     )
                     stats["added"] += 1
                     continue
