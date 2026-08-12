@@ -994,6 +994,44 @@
         background: rgba(255, 107, 107, 0.12);
         border-color: #ff6b6b;
       }
+
+      /* 卡片上的删除按钮（hover 显示） */
+      .card-delete-btn {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 26px;
+        height: 26px;
+        border: none;
+        background: transparent;
+        color: var(--text2);
+        cursor: pointer;
+        border-radius: 6px;
+        font-size: 15px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s, background 0.2s, color 0.2s;
+        z-index: 5;
+      }
+      .model-card:hover .card-delete-btn {
+        opacity: 1;
+      }
+      .card-delete-btn:hover {
+        background: rgba(255, 107, 107, 0.15);
+        color: #ff6b6b;
+      }
+      .compact-card .card-delete-btn {
+        position: static;
+        flex-shrink: 0;
+        margin-left: 6px;
+        opacity: 0.6;
+      }
+      .compact-card:hover .card-delete-btn {
+        opacity: 1;
+      }
       .detail-desc {
         background: var(--surface2);
         padding: 10px 14px;
@@ -1863,10 +1901,14 @@
                   style="margin-top: 10px; display: none"
                 ></div>
               </div>
-            </div>
+            
           </div>
         </div>
       </div>
+    </div>
+
+    
+        </div>
     </div>
 
     <!-- ===== 模型详情模态框 ===== -->
@@ -2025,6 +2067,7 @@
         <div class="model-card compact-card tier${tier}" data-provider="${escapeAttr(m.provider.slug)}" data-model="${escapeAttr(m.model_id)}">
           <div class="model-name-compact" title="${escapeAttr(m.model_id)}">${escapeAttr(m.model_id)}</div>
           <span class="meta-tag provider">🏢 ${escapeAttr(m.provider.name)}</span>
+          <button class="card-delete-btn" title="删除此模型">✕</button>
         </div>
       `;
             })
@@ -2059,31 +2102,47 @@
                 : "";
 
             return `
-      <div class="model-card tier${tier}" data-provider="${escapeAttr(m.provider.slug)}" data-model="${escapeAttr(m.model_id)}">
-        <div class="card-header">
-          <div class="model-name">${escapeAttr(m.name)}</div>
-          <span class="tier-badge t${tier}" title="${ti.label}：${ti.desc}">${ti.stars || "★★"}</span>
-        </div>
-        <div class="card-body">
-          <div class="card-desc">${desc || "免费模型，可通过 API 直接调用"}</div>
-          <div class="card-meta">
-            ${freeBadge}
-            <span class="meta-tag provider">🏢 ${escapeAttr(m.provider.name)}</span>
-            <span class="meta-tag use-case"><i>${USE_CASE_EMOJIS[m.use_case] || ""}</i> ${escapeAttr(ucLabel)}</span>
-          </div>
-        </div>
-        <div class="card-footer">
-          <span class="context">${contextHtml}</span>
-          <span class="quota">${quotaHtml}</span>
-        </div>
-      </div>
-    `;
+     <div class="model-card tier${tier}" data-provider="${escapeAttr(m.provider.slug)}" data-model="${escapeAttr(m.model_id)}">
+       <button class="card-delete-btn" title="删除此模型">✕</button>
+       <div class="card-header">
+         <div class="model-name">${escapeAttr(m.name)}</div>
+         <span class="tier-badge t${tier}" title="${ti.label}：${ti.desc}">${ti.stars || "★★"}</span>
+       </div>
+       <div class="card-body">
+         <div class="card-desc">${desc || "免费模型，可通过 API 直接调用"}</div>
+         <div class="card-meta">
+           ${freeBadge}
+           <span class="meta-tag provider">🏢 ${escapeAttr(m.provider.name)}</span>
+           <span class="meta-tag use-case"><i>${USE_CASE_EMOJIS[m.use_case] || ""}</i> ${escapeAttr(ucLabel)}</span>
+         </div>
+       </div>
+       <div class="card-footer">
+         <span class="context">${contextHtml}</span>
+         <span class="quota">${quotaHtml}</span>
+       </div>
+     </div>
+   `;
           })
           .join("");
       }
 
-      // 卡片统一事件委托（点击容器内的任一卡片及其子元素即打开模型详情）
+      // 卡片统一事件委托（点击删除按钮或卡片主体）
       grid.addEventListener("click", (e) => {
+        // 点击删除按钮 → 删除模型，不打开详情
+        const deleteBtn = e.target.closest(".card-delete-btn");
+        if (deleteBtn) {
+          const card = deleteBtn.closest(".model-card");
+          if (card) {
+            const provider = card.getAttribute("data-provider");
+            const model = card.getAttribute("data-model");
+            if (provider && model) {
+              deleteModelFromCard(provider, model);
+            }
+          }
+          return;
+        }
+
+        // 点击卡片主体 → 打开详情
         const card = e.target.closest(".model-card");
         if (!card) return;
         const provider = card.getAttribute("data-provider");
@@ -3082,6 +3141,26 @@
         }
       }
 
+      // 卡片删除模型（从卡片直接删除，不打开详情弹窗）
+      async function deleteModelFromCard(providerSlug, modelId) {
+        if (!confirm(`确认删除模型 "${modelId}"（提供商 ${providerSlug}）？\n\n删除后可通过"刷新数据"重新拉取。`)) return;
+        try {
+          const res = await fetch(
+            `${apiBase}/models/${providerSlug}/${encodeURIComponent(modelId)}`,
+            { method: "DELETE" },
+          );
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || "删除失败");
+          }
+          alert("✅ 模型已删除");
+          await loadStats();
+          await loadModels();
+        } catch (e) {
+          alert("❌ 删除失败: " + e.message);
+        }
+      }
+
       // 复制文本辅助函数
       async function copyText(elementId, btn) {
         const el = document.getElementById(elementId);
@@ -3329,5 +3408,5 @@
       }
       init();
     </script>
-  </body>
+      </body>
 </html>
